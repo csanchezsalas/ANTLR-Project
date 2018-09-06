@@ -1,0 +1,9 @@
+begin
+    if (var1) then
+    begin
+        a := a + 1;
+        b := 3
+    end
+    else
+        x := 3 * 2
+end
