@@ -1,38 +1,83 @@
+// TECNOLÓGICO DE COSTA RICA
+// I PROYECTO
+// CHRISTIAN SÁNCHEZ SALAS
+// KATHERINE TUZ CARRILLO
+//-------------------------------------------------------------------------------------------------
 lexer grammar MiScanner;
+//--------------------------------------------COMENTARIOS-------------------------------------------
+INICIO_COMEN: '/*';
+FIN_COMEN:'*/';
+SIMPLE_COMEN:'//';
+COMENTARIO: INICIO_COMEN (LETTER | DIGIT | COMENTARIO)* FIN_COMEN //HAY QUE HACER CAMBIOS
+            | SIMPLE_COMEN (LETTER | DIGIT | COMENTARIO)*; // SE LLAMA A COMENTARIO PARA QUE PUEDA SER UN COMENTARIO ANIDADO
+//------------------------------------------------AJUSTES--------------------------------------------
+WS:[ \t\n\r]+ -> skip; // cambio linea, return carry, tab, espacio blanco, bbbb
+COMILLAS: ' " ';
+//------------------------------------------- CARACTERES/ CLASES LÉXICAS--------------------------------------------
+LETTER: [A-Za-z_][A-Za-z0-9_]*;
+DIGIT: [0-9]+;
+ID: LETTER (LETTER | DIGIT)*;
+//falta printableChar=
+//falta num= es un número que no debe comenzar con 0 a menos de que sea el número 0.
+//falta:  permitir además el uso de punto flotante para aquellas constantes float (el separador de decimales de float debe ser el mismo que en C#.
+//-------------------------------------- CONSTANTES----------------------------------------------------
+COMSIMPLE: '\''; //comilla simple
+CHAR: COMSIMPLE LETTER COMSIMPLE;
+//falta int
+//falta float
+//falta bool
 
-PYC : ';';
-PLUS: '+';
-MINUS: '-';
+//STRING
+fragment COMILLA: ' " ';
+STRING: COMILLA . COMILLA;
+//------------------------------------------OPERADORES--------------------------------------------------
+ASSIGN: '=';
+SUMA: '+';
+SUMAS: '++';
+RESTA: '-';
+RESTAS:'--';
 MULT: '*';
-DIV: '/';
-COLON: ':';
+SLASH: '/';
+PORC:'%';
+IGUALES:'==';
+IGUAL:'=';
+DIFERENTE: '!=';
+MAYOR: '>';
+MAY_IGUAL: '>=';
+MENOR:'<';
+MEN_IGUAL: '<=';
+AND: '&&';
+OR: '||';
+PYC:';';
+COMA:',';
+PUNTO:'.';
+PARENT_ABIERTO: '(';
+PARENT_CERRADO: ')';
+LLAVE_ABIERTA: '[';
+LLAVE_CERRADA: ']';
+CURLY_ABIERTO: '{';
+CURLY_CERRADO: '}';
+//------------------------------------------PALABRAS RESERVADAS----------------------------------------
 IF: 'if';
-THEN: 'then';
 ELSE: 'else';
-WHILE: 'while';
-LET: 'let';
-BEGIN: 'begin';
-END: 'end';
-IN: 'in';
-DO: 'do';
+BREAK: 'break';
+CLASS: 'class';
 CONST: 'const';
-VAR: 'var';
-SYMBOL1: '~';
-PARENTHESIS_OPEN: '(';
-PARENTHESIS_CLOSED:  ')';
-ASSIGN: ':=';
-ID: [A-Za-z_][A-Za-z0-9_]*; //DEFINE UNA SECUENCIA, UN ID ES: DE A-Z ó de a-z ó _ + A-Z o a-z ó _
-NUMBER: [0-9]+; // DEFINE SECUENCIA
-// CHAR '\''(LETTER | DIGIT)*;
-WS:[ \t\n\r]+ -> skip;
+NEW: 'new';
+READ: 'read';
+RETURN: 'return';
+VOID: 'void';
+WHILE: 'while';
+WRITE: 'write';
+//------------------------------------------PATRONES-------------------------------------------------
+GUIONB: '_';
+IDENT: LETTER (LETTER | DIGIT | GUIONB)*;
+NUMBER: DIGIT (DIGIT)*;
+//CharConst:
 
 
-// algo . algo (el punto representa cualquier cosa)
 
 
-//CADENA : (ZERO | ONE)* ZERO ONE; //REGLA O ó 1 muchas veces, termina en 01
 
 
-/*fragment ZERO : '0'; //TOKEN QUE EN EL LENGUAJE RECONOCERÁ COMO ZERO, CADA VEZ QUE INTERPRETE UN 0 ENTENDERÁ "ZERO"
-fragment ONE : '1';*/
 
