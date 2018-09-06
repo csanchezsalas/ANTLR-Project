@@ -74,7 +74,7 @@ GUIONB: '_';
 IDENT: LETTER (LETTER | DIGIT | GUIONB)*;
 NUMBER: DIGIT (DIGIT)*;
 //CharConst:
-
+// CULO CULO
 
 
 
