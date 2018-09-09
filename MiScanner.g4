@@ -9,6 +9,13 @@
     KATHERINE TUZ CARRILLO
 ----------------------------------------------------------------------------------------------------
 */
+/*          TECNOLÓGICO DE COSTA RICA
+              UNIDAD DE COMPUTACIÓN
+             COMPILADORES PROYECTO
+             ----------------------
+             CHRISTIAN SÁNCHEZ SALAS
+             KATHERINE TUZ CARRILLO
+*/
 lexer grammar MiScanner;
 
 //------------------------------------------------AJUSTES--------------------------------------------
@@ -29,39 +36,29 @@ VOID: 'void';
 WHILE: 'while';
 WRITE: 'write';
 FOR: 'for';
-
-
+//--------------------------------------------------------------------------------------------------
 NUMBER: [0-9]+;
-
 
 IDENT: LETTER (LETTER | NUMBER)*;
 
 LETTER: [A-Za-z_];
 
-//fragment CERO:[0];
-//NUM: CERO | NUMVALIDO (NUMBER)* ; //num= es un número que no debe comenzar con 0 a menos de que sea el número 0.
-
-FLOAT: (NUMBER) PUNTO (NUMBER); //permitir además el uso de punto flotante para aquellas constantes float (el separador de decimales de float debe ser el mismo que en C#.
-
+FLOAT: (NUMBER) PUNTO (NUMBER);
 
 PRINTABLECHAR: LETTER '+' NUMBER '+' (EXCLAMA COMILLA GATO DOLAR PORC ANDUNO COMSIMPLE
                 PARENT_ABIERTO PARENT_CERRADO MULT SUMA COMA RESTA
-                PUNTO SLASH DOSPTO PYC MENOR IGUAL MAYOR PREGUNTA ARROBA); //printableChar = letter ∪ digit ∪   ! " # $ % & ' ( ) * + , - . / : ; < = > ? @
+                PUNTO SLASH DOSPTO PYC MENOR IGUAL MAYOR PREGUNTA ARROBA);
 
-CHARCONST: COMSIMPLE(PRINTABLECHAR | '\n' | '\r') COMSIMPLE; //CharConst: "'" ( printableChar | "\n" | "\r" ) "'"
+CHARCONST: COMSIMPLE(PRINTABLECHAR | '\n' | '\r') COMSIMPLE;
 
 STRING: COMILLA . COMILLA;
 
 fragment TRUE: 'true';
 fragment FALSE: 'false';
 BOOL: TRUE | FALSE;
-
-
+//--------------------------------------------------------------------------------------------------
 fragment COMSIMPLE: '\'';
-
 fragment COMILLA: ' " ';
-
-//fragment NUMVALIDO: [1-9]+;
 fragment EXCLAMA: '!';
 fragment GATO: '#';
 fragment DOLAR: '$';
@@ -69,7 +66,7 @@ fragment ANDUNO: '&';
 fragment DOSPTO: ':';
 fragment PREGUNTA:'?';
 fragment ARROBA:'@';
-
+//--------------------------------------------------------------------------------------------------
 SUMA: '+';
 SUMAS: '++';
 RESTA: '-';
