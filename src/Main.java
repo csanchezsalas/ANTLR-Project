@@ -11,14 +11,14 @@ public class Main {
 
     public static void main(String[] args) {
         MiScanner inst = null;
-        CustomParser parser = null;
-        CharStream input=null; //"string" de caracateres
+        MiParser parser = null;
+        CharStream input=null; //"string" de caracteres
         CommonTokenStream tokens = null; //"string" de tokens
         try {
-            input = CharStreams.fromFileName("test.txt"); // all lo que tenga el archivo se carga en CharStreams
+            input = CharStreams.fromFileName("test.txt"); // a lo que tenga el archivo se carga en CharStreams
             inst = new MiScanner(input);
-            //tokens = new CommonTokenStream(inst);
-            parser = new CustomParser(inst);
+            tokens = new CommonTokenStream(inst);
+            parser = new MiParser(tokens);
 
             parser.program();
         } catch(Exception e){
