@@ -33,16 +33,15 @@ FOR: 'for';
 
 NUMBER: [0-9]+;
 
-LETTER: [A-Za-z_];
 
 IDENT: LETTER (LETTER | NUMBER)*;
 
-//fragment CERO:[0];
+LETTER: [A-Za-z_];
 
+//fragment CERO:[0];
 //NUM: CERO | NUMVALIDO (NUMBER)* ; //num= es un número que no debe comenzar con 0 a menos de que sea el número 0.
 
 FLOAT: (NUMBER) PUNTO (NUMBER); //permitir además el uso de punto flotante para aquellas constantes float (el separador de decimales de float debe ser el mismo que en C#.
-
 
 
 PRINTABLECHAR: LETTER '+' NUMBER '+' (EXCLAMA COMILLA GATO DOLAR PORC ANDUNO COMSIMPLE
@@ -53,15 +52,16 @@ CHARCONST: COMSIMPLE(PRINTABLECHAR | '\n' | '\r') COMSIMPLE; //CharConst: "'" ( 
 
 STRING: COMILLA . COMILLA;
 
+fragment TRUE: 'true';
+fragment FALSE: 'false';
 BOOL: TRUE | FALSE;
 
 
 fragment COMSIMPLE: '\'';
-fragment TRUE: 'true';
-fragment FALSE: 'false';
+
 fragment COMILLA: ' " ';
 
-fragment NUMVALIDO: [1-9]+;
+//fragment NUMVALIDO: [1-9]+;
 fragment EXCLAMA: '!';
 fragment GATO: '#';
 fragment DOLAR: '$';
