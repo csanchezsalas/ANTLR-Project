@@ -10,20 +10,20 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-        MiScanner inst = null;
-        CustomParser parser = null;
+/*        MiScanner inst = null;
+        MiParser parser = null;
         CharStream input=null; //"string" de caracateres
         CommonTokenStream tokens = null; //"string" de tokens
         try {
             input = CharStreams.fromFileName("test.txt"); // all lo que tenga el archivo se carga en CharStreams
             inst = new MiScanner(input);
-            //tokens = new CommonTokenStream(inst);
-            parser = new CustomParser(inst);
+            tokens = new CommonTokenStream(inst);
+            parser = new MiParser(tokens);
 
             parser.program();
         } catch(Exception e){
             System.out.println("No hay archivo");
-            e.printStackTrace();
+            e.printStackTrace(); // me dice donde está el error
         }
 
         inst.reset();
@@ -31,6 +31,9 @@ public class Main {
 
         for (Token t : lista)
 
-            System.out.println(MiScanner.VOCABULARY.getSymbolicName(t.getType()) + ":" + t.getText() + "\n");
+            System.out.println(MiScanner.VOCABULARY.getSymbolicName(t.getType()) + ":" + t.getText() + "\n");*/
+
+        new IDE();
+
     }
 }
