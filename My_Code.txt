@@ -1,31 +1,32 @@
-eddfd
-dgdf
+class P
 
+	const int size = 10;
 
+    	class Table {
+    		List pos;
+    		List neg;
+    	}
 
+    	Table val;
+    {
+    	void Main ()
+    		int x, i;
+    	{
+    		//---------- Initialize val ----------
+    		val = new Table;
+    		val.pos = new List; val.neg = new List;
+    		i = 0;
+    		while (i < size) {
+    			add(val.pos,0); add(val.neg,0);
+    			i++;
+    		}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-dffdd
-fdfd
-
+    		/*---------- Read values ----------*/
+    		read(x);
+    		while (-size < x && x < size) {
+    			if (0 <= x) val.pos[x]++;
+    			else val.neg[-x]++;
+    			read(x);
+    		}
+    	}
+    }

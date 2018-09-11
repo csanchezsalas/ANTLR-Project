@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.antlr.v4.runtime.tree.ParseTree;
+
+
 public class IDE {
     private JButton compileButton;
     private JButton showASTButton;
@@ -17,16 +20,16 @@ public class IDE {
     private JTextArea textArea1;
     private JTextArea OUTTextArea;
 
+    private ParseTree tree = null;
+
+
     MiScanner inst = null;
     MiParser parser = null;
     CharStream input=null; //"string" de caracateres
     CommonTokenStream tokens = null; //"string" de tokens
 
-
     public IDE() {
         JFrame frame = new JFrame("PARSER PROJECT");
-
-
 
         frame.setSize(500, 500);
         frame.setBounds(400, 150, 500, 500);
@@ -54,7 +57,22 @@ public class IDE {
                         tokens = new CommonTokenStream(inst);
                         parser = new MiParser(tokens);
 
+                     //   parser.program();
+
+                        //-----------ARBOL
+                        try {
+                            tree = parser.program();
+                        }
+                        catch(RecognitionException errr){
+                            errr.printStackTrace();
+                        }
+                        //-----------------
+
+
                         parser.program();
+
+
+
                     } catch(Exception err){
                         // aquí debo hacer el dialog para que imprima el error...
                         System.out.println("No hay archivo");
@@ -88,6 +106,20 @@ public class IDE {
             public void changedUpdate(DocumentEvent documentEvent)
             {
                 lineNumberingTextArea.updateLineNumbers();
+            }
+        });
+        //--------------------------------------ÁRBOL------------------------------
+        showASTButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    System.out.println("hola");
+                    java.util.concurrent.Future<JFrame> treeGUI = org.antlr.v4.gui.Trees.inspect(tree, parser);
+                    treeGUI.get().setVisible(true);
+                }
+                catch(Exception ex){
+
+                }
             }
         });
     }

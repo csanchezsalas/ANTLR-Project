@@ -1,14 +1,3 @@
-// TECNOLÓGICO DE COSTA RICA
-// I PROYECTO
-// CHRISTIAN SÁNCHEZ SALAS
-// KATHERINE TUZ CARRILLO
-//-------------------------------------------------------------------------------------------------
-/* TECNOLÓGICO DE COSTA RICA
-        1 PROYECTO
-    CHRISTIAN SÁNCHEZ SALAS
-    KATHERINE TUZ CARRILLO
-----------------------------------------------------------------------------------------------------
-*/
 /*          TECNOLÓGICO DE COSTA RICA
               UNIDAD DE COMPUTACIÓN
              COMPILADORES PROYECTO
