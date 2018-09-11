@@ -31,6 +31,7 @@ public class IDE {
     public IDE() {
         JFrame frame = new JFrame("PARSER PROJECT");
 
+
         frame.setSize(500, 500);
         frame.setBounds(400, 150, 500, 500);
         frame.setContentPane(panel1);
@@ -38,9 +39,28 @@ public class IDE {
         frame.pack();
         frame.setVisible(true);
 
+
         LineNumberingTextArea lineNumberingTextArea = new LineNumberingTextArea(textArea1);
         scroller.setRowHeaderView(lineNumberingTextArea);
         // scroller.setColumnHeader();
+        try {
+            FileReader fr = new FileReader("My_Code.txt");
+            BufferedReader reader = new BufferedReader(fr);
+            textArea1.read(reader, "textArea1");
+            String line;
+            while ((line = reader.readLine()) != null)
+            {
+                textArea1.append(line + "\n");
+
+            }
+
+        }
+        catch (FileNotFoundException ex) {
+            System.out.println("no such file exists");
+        }
+        catch (IOException ex) {
+            System.out.println("unkownerror");
+        }
 
         compileButton.addActionListener(new ActionListener() {
             @Override
@@ -64,13 +84,9 @@ public class IDE {
                             tree = parser.program();
                         }
                         catch(RecognitionException errr){
-                            errr.printStackTrace();
+
                         }
                         //-----------------
-
-
-                        parser.program();
-
 
 
                     } catch(Exception err){
@@ -115,7 +131,7 @@ public class IDE {
                 try {
                     System.out.println("hola");
                     java.util.concurrent.Future<JFrame> treeGUI = org.antlr.v4.gui.Trees.inspect(tree, parser);
-                    treeGUI.get().setVisible(true);
+                    // treeGUI.get().setVisible(true);
                 }
                 catch(Exception ex){
 

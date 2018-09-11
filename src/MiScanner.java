@@ -1,4 +1,4 @@
-// Generated from C:/Users/Kathe/IdeaProjects/ANTLR-Project\MiScanner.g4 by ANTLR 4.7
+// Generated from C:/Users/CHRISTIAN/IdeaProjects/Scanner1\MiScanner.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
