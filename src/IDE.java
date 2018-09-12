@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import javax.swing.text.*;
 import javax.swing.event.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -70,6 +71,7 @@ public class IDE {
         compileButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                OUTTextArea.setText(null);
                 try{
                     PrintWriter writer = new PrintWriter("My_Code.txt", "UTF-8");
                     writer.println(textArea1.getText());
@@ -88,6 +90,7 @@ public class IDE {
 
                         //-----------ARBOL
                         try {
+
                             tree = parser.program();
                         }
                         catch(RecognitionException er){
@@ -95,13 +98,19 @@ public class IDE {
                             er.printStackTrace();
                         }
                         if (errorListener.hasErrors() == false) {
-                            System.out.println("Compilación Exitosa!\n");
-                            OUTTextArea.setText("COMPILACION EXITOSA");
+                            // System.out.println("Compilación Exitosa!\n");
+                            OUTTextArea.setText(null);
+                            OUTTextArea.setForeground(Color.BLUE);
+                            OUTTextArea.setText("SUCCESFULLY COMPILATION! FOR SURE 100 GRADE ^.^ ");
+                            errorListener.errorMsgs.clear();
                         }
                         else {
-                            System.out.println("Compilación Fallida!\n");
-                            OUTTextArea.setText("COMPILACION FALLIDA\n");
+                            // System.out.println("Compilación Fallida!\n");
+                            OUTTextArea.setText(null);
+                            OUTTextArea.setForeground(Color.RED);
+                            OUTTextArea.setText("COMPILATION FAILED!\n");
                             OUTTextArea.append(errorListener.toString());
+                            errorListener.errorMsgs.clear();
                         }
 
 
