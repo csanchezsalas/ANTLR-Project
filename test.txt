@@ -1,11 +1,32 @@
 class P
-
-	// const int size = 10;
+	int x;
+	class miClasesita{
+		int x;
+		int z;
+	}
 	int y;
-	/* class X {}
-	class X {}
-	class Z {} */
-{}
+
+	
+	
+{ int metodito(int t, int[] o, char a, char b){} }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

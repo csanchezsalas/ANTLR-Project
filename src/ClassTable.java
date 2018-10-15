@@ -34,7 +34,7 @@ public class ClassTable {
             return 1; //means id exists already in table
     }
 
-    private boolean exists(String id){
+    public boolean exists(String id){
         for (Iterator i = table.descendingIterator(); i.hasNext(); ) {
             ClassTable.Symbol aux = (ClassTable.Symbol) i.next();
             if (aux.getName().equals(id))

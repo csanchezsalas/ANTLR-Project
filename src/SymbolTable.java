@@ -11,11 +11,11 @@ public class SymbolTable {
         private int level;
         private boolean isArray;
 
-        public Symbol(String n, String t, int l) { // definir si es arreglo o no
+        public Symbol(String n, String t, int l, boolean f) { // definir si es arreglo o no
             this.name = n;
             this.type = t;
             this.level = l;
-            this.isArray = false;
+            this.isArray = f;
         }
 
         public int getLevel() {
@@ -32,7 +32,7 @@ public class SymbolTable {
 
         @Override
         public String toString(){
-            return "ID:"+this.name+",Type:"+this.type+",Level:"+this.level;
+            return "ID: "+this.name+", Type: "+this.type+", Level: "+this.level+", isArray?: "+this.isArray+"\n";
         }
     }
 
@@ -42,9 +42,9 @@ public class SymbolTable {
     /**
      * Agrega un identificador a la Tabla
      */
-    public int enter(String id, String tipo) {
+    public int enter(String id, String tipo, boolean isArray) {
         if (!this.exists(id,actualLevel)) {
-            table.add(new Symbol(id, tipo, actualLevel));
+            table.add(new Symbol(id, tipo, actualLevel, isArray));
             return 0; //means id was succesfully inserted in table
         }
         else
