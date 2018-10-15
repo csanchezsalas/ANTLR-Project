@@ -1,34 +1,124 @@
-class P
+class AllProds
+  const int nPoints = 2;
+   const char exclaim = '!'; 
+   const char caracterEspecial = '\n'; 
+  
+  class Point {
+    int x, y; 
+  }
 
-	const int size = 10;
-
-    	class Table {
-    		List pos;
-    		List neg;
-    	}
-
-    	Table val;
-    {
-    	void Main ()
-    		int x, i;
-    	{
-    		//---------- Initialize val ----------
-    		val = new Table;
-    		val.pos = new List; val.neg = new List;
-    		i = 0;
-    		while (i < size) {
-    			add(val.pos,0); add(val.neg,0);
-    			i++;
-    		}
-
-    		/*---------- Read values ----------*/
-    		read(x);
-    		while (-size < x && x < size) {
-    			if (0 <= x) val.pos[x]++;
-    			else val.neg[-x]++;
-    			read(x);
-    		}
-    	}
+  char[] msg;
+  Point[] pArr;
+  boolean test1;
+{
+  void WriteError ()
+    int i;
+    boolean test2;
+  {
+    /* imprimir mensaje error */
+    i = 0;
+    test1 = true;
+    while(i<len(msg)){write(msg[i]);i++;}
+    for(i;i<len(msg); i ++)  {write(msg[i]);} 
+    write(exclaim);
+    while (i > 0) {
+      i--;
+      if (i < 3 && test1==true) break;	
+      write(msg[i], 2);
     }
+  }
+
+  int GetX (Point p) { return p.x.Z[3+4]; } 
+
+  void SetX (int x, Point p) {
+    if (x > -10 && x <= 9 ||
+        x == 4*3/4%4+12-11* (2147483647/(-2147483647-1)%2) )
+      p.x = x;
+    else WriteError();
+  }
+
+  void SetMsg () { //block
+    msg = new char5;
+    msg[0] = E; 		
+    msg[1] = r;		
+    msg[2] = r;
+    msg[3] = r; 
+    msg[4] = msg[3];
+    msg[3] = o;
+  }
+
+  void SetPoints ()
+    int i;
+  {
+    pArr = new Point[nPoints];
+    i = 0;
+    while (i < len(pArr)) {
+      pArr[i] = new Point;
+      pArr[i].x = i;
+      pArr[i].y = i;
+      i++;
+    }
+  }
+
+  int prueba(Point x, char w)
+  {
+      return val.neg[i].algo;
+	/*comentario
+	/*mal*/ /*anidado SE LE AGREGA ESTO PORQUE ESTA MAL ANIDADO: */ */
+  }
+
+  void Main ()
+    int i;
+  {
+    SetMsg();
+    SetPoints();
+    read(i);
+    if (i < nPoints) {
+      write(GetX(pArr[i]));
+      write(pArr[i].y);
+    }
+    else
+      WriteError();
+      write('n'); 
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

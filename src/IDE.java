@@ -5,11 +5,9 @@
              CHRISTIAN SÁNCHEZ SALAS
              KATHERINE TUZ CARRILLO
 */
-
+import generated.*;
 import javax.swing.*;
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
-import javax.swing.text.*;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -35,6 +33,7 @@ public class IDE {
     CharStream input=null; //"string" de caracateres
     CommonTokenStream tokens = null; //"string" de tokens
     MyErrorListener errorListener = null;
+    AContextual v = null;
 
     public IDE() {
         JFrame frame = new JFrame("PARSER PROJECT");
@@ -52,7 +51,7 @@ public class IDE {
         scroller.setRowHeaderView(lineNumberingTextArea);
         // scroller.setColumnHeader();
         try {
-            FileReader fr = new FileReader("My_Code.txt");
+            FileReader fr = new FileReader("test.txt");
             BufferedReader reader = new BufferedReader(fr);
             textArea1.read(reader, "textArea1");
             String line;
@@ -73,11 +72,11 @@ public class IDE {
             public void actionPerformed(ActionEvent e) {
                 OUTTextArea.setText(null);
                 try{
-                    PrintWriter writer = new PrintWriter("My_Code.txt", "UTF-8");
+                    PrintWriter writer = new PrintWriter("test.txt", "UTF-8");
                     writer.println(textArea1.getText());
                     writer.close();
                     try {
-                        input = CharStreams.fromFileName("My_Code.txt"); // all lo que tenga el archivo se carga en CharStreams
+                        input = CharStreams.fromFileName("test.txt"); // all lo que tenga el archivo se carga en CharStreams
                         inst = new MiScanner(input);
                         tokens = new CommonTokenStream(inst);
                         parser = new MiParser(tokens);
@@ -103,6 +102,12 @@ public class IDE {
                             OUTTextArea.setForeground(Color.BLUE);
                             OUTTextArea.setText("SUCCESFULLY COMPILATION! FOR SURE 100 GRADE ^.^ ");
                             errorListener.errorMsgs.clear();
+                            try { /** ADAPTACIÓN DEL ANÁLISIS SEMÁNTICO */
+                                v = new AContextual();
+                                v.visit(tree);
+                            }
+                            catch(Exception f) {
+                            }
                         }
                         else {
                             // System.out.println("Compilación Fallida!\n");
@@ -120,9 +125,9 @@ public class IDE {
 
                     }
                     inst.reset();
-                    List<Token> lista = (List<Token>) inst.getAllTokens();
+                    /*List<Token> lista = (List<Token>) inst.getAllTokens();
                     for (Token t : lista)
-                        System.out.println(MiScanner.VOCABULARY.getSymbolicName(t.getType()) + ":" + t.getText() + "\n");
+                        System.out.println(MiScanner.VOCABULARY.getSymbolicName(t.getType()) + ":" + t.getText() + "\n");*/
 
                 }catch (IOException ex) {
                     Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);

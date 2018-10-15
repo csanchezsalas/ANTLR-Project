@@ -7,6 +7,8 @@
 */
 import org.antlr.v4.runtime.*;
 import java.util.ArrayList;
+import generated.*;
+
 
 public class MyErrorListener extends BaseErrorListener {
 

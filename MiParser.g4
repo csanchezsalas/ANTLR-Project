@@ -25,9 +25,9 @@ formPars: type IDENT (COMA type IDENT)*                                         
 
 type: IDENT (LLAVE_ABIERTA LLAVE_CERRADA)?                                                                          #typeAST;
 
-statement: designator (IGUAL expr | PARENT_ABIERTO (actPars)? PARENT_CERRADO | SUMAS | RESTAS) PYC                  #designatorStatAST
+statement: designator (IGUAL expr | PARENT_ABIERTO (actPars)? PARENT_CERRADO | SUMAS | RESTAS) PYC?                  #designatorStatAST
             | (IF PARENT_ABIERTO condition PARENT_CERRADO statement ( ELSE statement)? )                            #ifStatAST
-            | (FOR PARENT_ABIERTO expr PYC (condition)? PYC (statement)? statement)                                 #forStatAST
+            | (FOR PARENT_ABIERTO expr PYC (condition)? PYC (statement)? PARENT_CERRADO statement)                                 #forStatAST
             | (WHILE PARENT_ABIERTO condition PARENT_CERRADO statement)                                             #whileStatAST
             | (BREAK PYC)                                                                                           #breakStatAST
             | (RETURN (expr)? PYC)                                                                                  #returnStatAST
@@ -54,10 +54,10 @@ factor: designator (PARENT_ABIERTO (actPars)? PARENT_CERRADO)?                  
         | NUMBER                                                                                                    #numberFactorAST
         | CHARCONST                                                                                                 #charconsFactorAST
         | BOOL                                                                                                      #boolFactorAST
-        | NEW IDENT                                                                                                 #newFactorAST
-        | (PARENT_ABIERTO expr PARENT_CERRADO PUNTO)                                                                #parentFactorAST;
+        | NEW (LLAVE_ABIERTA)? (IDENT|NUMBER) (LLAVE_ABIERTA)?                                                                                                 #newFactorAST
+        | (PARENT_ABIERTO expr PARENT_CERRADO PUNTO?)                                                                #parentFactorAST;
 
-designator: IDENT (PUNTO IDENT | LLAVE_ABIERTA expr LLAVE_CERRADA)*                                                #designatorAST;
+designator: IDENT ( PUNTO IDENT | LLAVE_ABIERTA expr LLAVE_CERRADA)*                                                #designatorAST;
 
 relop: IGUALES                                                                                                     #igualesRelopAST
         | DIFERENTE                                                                                                #diferenteRelopAST
