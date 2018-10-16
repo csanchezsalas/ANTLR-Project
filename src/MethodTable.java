@@ -12,6 +12,8 @@ public class MethodTable {
         private ArrayList<String> identifiersList;
         private ArrayList<String> isArray;
 
+
+
         public Symbol(String name, String returnType, int length, ArrayList<String> typesList, ArrayList<String> identifiersList, ArrayList<String> isArray) {
             this.name = name;
             this.returnType = returnType;
@@ -140,4 +142,16 @@ public class MethodTable {
         else
             return result;
     }
+   /* public void openScope() {
+        this.actualLevel++;
+    }
+
+    public void closeScope() {
+        for (int i=table.size()-1; i>=0;i--)
+            if (table.get(i).getLevel()==this.actualLevel)
+                table.remove(i);
+            else
+                break;
+        this.actualLevel--;*/
+
 }

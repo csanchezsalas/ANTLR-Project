@@ -107,6 +107,9 @@ public class AContextual extends MiParserBaseVisitor {
         for(int i = 0; i<=ctx.classDecl().size()-1; i++){
             visit(ctx.classDecl(i));
         }
+        for(int i = 0; i<=ctx.methodDecl().size()-1; i++){
+            visit(ctx.methodDecl(i));
+        }
 
         tableS.closeScope();
         return null;
@@ -195,10 +198,6 @@ public class AContextual extends MiParserBaseVisitor {
         }
         return null;
 
-
-
-
-
         // return visitChildren(ctx);
     }
 
@@ -215,7 +214,11 @@ public class AContextual extends MiParserBaseVisitor {
         return null;
     }
 
-    @Override public Object visitMethodDAST(MiParser.MethodDASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitMethodDAST(MiParser.MethodDASTContext ctx) {
+
+      //  (type | VOID) IDENT PARENT_ABIERTO (formPars)? PARENT_CERRADO (varDecl)* block
+        visit(ctx.block());
+        return null; }
 
     @Override public Object visitFormPAST(MiParser.FormPASTContext ctx) {
 
@@ -255,7 +258,6 @@ public class AContextual extends MiParserBaseVisitor {
         result.add(identifierParams);
         result.add(isArrayParams);
         return result;
-
     }
 
     @Override public Object visitTypeAST(MiParser.TypeASTContext ctx) {
@@ -268,16 +270,25 @@ public class AContextual extends MiParserBaseVisitor {
         tokens.add(pseudo);
 
         return tokens;
-
     }
 
     @Override public Object visitDesignatorStatAST(MiParser.DesignatorStatASTContext ctx) { return visitChildren(ctx); }
 
-    @Override public Object visitIfStatAST(MiParser.IfStatASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitIfStatAST(MiParser.IfStatASTContext ctx) {
+        /* (IF PARENT_ABIERTO condition PARENT_CERRADO statement ( ELSE statement)? ) */
+        visit(ctx.condition());
+        visit(ctx.statement(0));
+        for(int i = 1; i<ctx.statement().size()-1; i++){
+            visit(ctx.statement(i));
+        }
+        return null; }
 
     @Override public Object visitForStatAST(MiParser.ForStatASTContext ctx) { return visitChildren(ctx); }
 
-    @Override public Object visitWhileStatAST(MiParser.WhileStatASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitWhileStatAST(MiParser.WhileStatASTContext ctx) {
+        visit(ctx.condition());
+        visit(ctx.statement());
+        return visitChildren(ctx); }
 
     @Override public Object visitBreakStatAST(MiParser.BreakStatASTContext ctx) { return visitChildren(ctx); }
 
@@ -287,31 +298,94 @@ public class AContextual extends MiParserBaseVisitor {
 
     @Override public Object visitWriteStatAST(MiParser.WriteStatASTContext ctx) { return visitChildren(ctx); }
 
-    @Override public Object visitBlockStatAST(MiParser.BlockStatASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitBlockStatAST(MiParser.BlockStatASTContext ctx) {
+        visit(ctx.block());
+        return null; }
 
     @Override public Object visitPycStatAST(MiParser.PycStatASTContext ctx) { return visitChildren(ctx); }
 
-    @Override public Object visitBlockAST(MiParser.BlockASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitBlockAST(MiParser.BlockASTContext ctx) {
+        // CURLY_ABIERTO (statement)* CURLY_CERRADO
+        //tableM.openScope();
+        for(int i = 0; i<ctx.statement().size()-1; i++){
+            visit(ctx.statement(i));
+        }
+        //    tableM.closeScope();
+        return null; }
 
     @Override public Object visitActParsAST(MiParser.ActParsASTContext ctx) { return visitChildren(ctx); }
 
-    @Override public Object visitConditionAST(MiParser.ConditionASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitConditionAST(MiParser.ConditionASTContext ctx) {
+        //condTerm (OR condTerm)*
+        visit(ctx.condTerm(0));
+        for(int i = 1; i<ctx.condTerm().size()-1; i++){
+            visit(ctx.condTerm(i));
+        }
+        return null; }
 
-    @Override public Object visitCondTermAST(MiParser.CondTermASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitCondTermAST(MiParser.CondTermASTContext ctx) {
+       // condFact(AND condFact)*
+        visit(ctx.condFact(0));
+        for(int i = 1; i<ctx.condFact().size()-1; i++){
+            visit(ctx.condFact(i));
+        }
+        return null; }
 
-    @Override public Object visitCondFactAST(MiParser.CondFactASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitCondFactAST(MiParser.CondFactASTContext ctx) {
+        //expr relop expr
+        //relop: IGUALES   | DIFERENTE   | MAYOR  | MAY_IGUAL  | MENOR  | MEN_IGUAL
+        String expr1= (String) visit (ctx.expr(0)); //OCUPO SABER SI EXPR1 Y EXPR2 CUMPLEN TIPOS SEGUN EL RELOP QUE HAYA
+        String expr2= (String) visit (ctx.expr(1));
+     //   visit(ctx.relop());
+        if(visit(ctx.relop()).equals("==")
+            || (visit(ctx.relop()).equals("!=") )){ //EN CASO DE QUE RELOP SEA == o != acepta cualquier tipo
+            if (expr1.equals(expr2)==false) {
+                this.numErrors++;
+                System.out.println("Semantic Error ("
+                         + "): Incompatible types in expression between "
+                        + expr1 + " and " + expr2);
+            }
+        } else if(visit(ctx.relop()).equals(">") //EN CASO DE QUE RELOP SEA >, >=, <, <=
+                || visit(ctx.relop()).equals(">=")
+                || visit(ctx.relop()).equals("<")
+                || visit(ctx.relop()).equals("<=")) {
+            if (expr1.equals("char") || expr1.equals("bool")
+                || expr2.equals("char") || expr2.equals("bool") ) { //solo sirve para int
+                this.numErrors++;
+                System.out.println("Semantic Error ("
+                        + "): Incompatible types, just ints pls! "
+                        + expr1 + " and " + expr2);
+            }
+        }
 
-    @Override public Object visitExprAST(MiParser.ExprASTContext ctx) { return visitChildren(ctx); }
+        return null; }
 
-    @Override public Object visitTermAST(MiParser.TermASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitExprAST(MiParser.ExprASTContext ctx) {
+        // (RESTA)? term (addop term)*
+        visit(ctx.term(0));
+        for(int i = 1; i<ctx.term().size()-1; i++){
+            visit(ctx.term(i));
+        }
+        return null; }
+
+    @Override public Object visitTermAST(MiParser.TermASTContext ctx) {
+        visit(ctx.factor(0));
+        for(int i = 1; i<ctx.factor().size()-1; i++){
+            visit(ctx.factor(i));
+        }
+        return null; }
 
     @Override public Object visitDesignatorFactorAST(MiParser.DesignatorFactorASTContext ctx) { return visitChildren(ctx); }
 
-    @Override public Object visitNumberFactorAST(MiParser.NumberFactorASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitNumberFactorAST(MiParser.NumberFactorASTContext ctx) {
+        return "int"; }
 
-    @Override public Object visitCharconsFactorAST(MiParser.CharconsFactorASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitCharconsFactorAST(MiParser.CharconsFactorASTContext ctx) {
+        return "char"; }
 
-    @Override public Object visitBoolFactorAST(MiParser.BoolFactorASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitBoolFactorAST(MiParser.BoolFactorASTContext ctx) {
+
+        return "bool"; }
 
     @Override public Object visitNewFactorAST(MiParser.NewFactorASTContext ctx) { return visitChildren(ctx); }
 
@@ -319,17 +393,24 @@ public class AContextual extends MiParserBaseVisitor {
 
     @Override public Object visitDesignatorAST(MiParser.DesignatorASTContext ctx) { return visitChildren(ctx); }
 
-    @Override public Object visitIgualesRelopAST(MiParser.IgualesRelopASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitIgualesRelopAST(MiParser.IgualesRelopASTContext ctx) {
 
-    @Override public Object visitDiferenteRelopAST(MiParser.DiferenteRelopASTContext ctx) { return visitChildren(ctx); }
+        return "=="; }
 
-    @Override public Object visitMayorRelopAST(MiParser.MayorRelopASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitDiferenteRelopAST(MiParser.DiferenteRelopASTContext ctx) {
+        return "!="; }
 
-    @Override public Object visitMayigualRelopAST(MiParser.MayigualRelopASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitMayorRelopAST(MiParser.MayorRelopASTContext ctx) {
+        return ">"; }
 
-    @Override public Object visitMenorRelopAST(MiParser.MenorRelopASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitMayigualRelopAST(MiParser.MayigualRelopASTContext ctx) {
+        return ">="; }
 
-    @Override public Object visitMenigualRelopAST(MiParser.MenigualRelopASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitMenorRelopAST(MiParser.MenorRelopASTContext ctx) {
+        return "<"; }
+
+    @Override public Object visitMenigualRelopAST(MiParser.MenigualRelopASTContext ctx) {
+        return "<="; }
 
     @Override public Object visitSumaAddopAST(MiParser.SumaAddopASTContext ctx) { return visitChildren(ctx); }
 

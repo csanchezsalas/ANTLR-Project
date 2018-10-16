@@ -4,11 +4,16 @@ class P
 		int x;
 		int z;
 	}
-	int y;
+	char y;
+	
+{ int metodito () {
+	if( y ==2)
+	;} 
+}
 
-	
-	
-{ int metodito(int t, int[] o, char a, char b){} }
+
+
+
 
 
 
