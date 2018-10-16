@@ -11,19 +11,14 @@ public class MethodTable {
         private ArrayList<String> typesList;
         private ArrayList<String> identifiersList;
         private ArrayList<String> isArray;
-        private int level;
 
-        public Symbol(String name, String returnType, int length, ArrayList<String> typesList, ArrayList<String> identifiersList, ArrayList<String> isArray, int level) {
+        public Symbol(String name, String returnType, int length, ArrayList<String> typesList, ArrayList<String> identifiersList, ArrayList<String> isArray) {
             this.name = name;
             this.returnType = returnType;
             this.length = length;
             this.typesList = typesList;
             this.identifiersList = identifiersList;
             this.isArray = isArray;
-            this.level = level;
-        }
-        public int getLevel() {
-            return level;
         }
 
         public String getReturnType() {
@@ -97,13 +92,13 @@ public class MethodTable {
 
     // private int actualLevel = 0;
     private LinkedList<MethodTable.Symbol> table = new LinkedList<MethodTable.Symbol>();
-    private int actualLevel = 0;
+
     /**
      * Agrega un identificador a la Tabla
      */
     public int enter(String id, String returnType, int length, ArrayList<String> typesList, ArrayList<String> identifiersList, ArrayList<String> isArray) {
         if (!this.exists(id)) {
-            table.add(new MethodTable.Symbol(id, returnType, length, typesList, identifiersList, isArray, actualLevel));
+            table.add(new MethodTable.Symbol(id, returnType, length, typesList, identifiersList, isArray));
             return 0; //means id was succesfully inserted in table
         }
         else
@@ -131,22 +126,7 @@ public class MethodTable {
         }
         return null;
     }
-    public void openScope() {
-        this.actualLevel++;
-    }
 
-    /**
-     * Elimina el más profundo nivel de identificadores de la tabla.
-     * Se borran todos los campos de la tabla asociados con el nivel
-     */
-    public void closeScope() {
-        for (int i=table.size()-1; i>=0;i--)
-            if (table.get(i).getLevel()==this.actualLevel)
-                table.remove(i);
-            else
-                break;
-        this.actualLevel--;
-    }
 
 
     @Override

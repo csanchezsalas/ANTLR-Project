@@ -4,11 +4,42 @@ class P
 		int x;
 		int z;
 	}
-	int y;
+	const char y = 'a';
+	
+{ int metodito () { } 
+}
 
-	
-	
-{ int metodito(int t, int[] o, char a, char b){} }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
