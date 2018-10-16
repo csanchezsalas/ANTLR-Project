@@ -4,12 +4,38 @@ class P
 		int x;
 		int z;
 	}
-	char y;
+	const char y = 'a';
 	
-{ int metodito () {
-	if( y ==2)
-	;} 
+{ int metodito () { } 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

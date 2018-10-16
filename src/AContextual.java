@@ -2,6 +2,7 @@ import generated.MiParser;
 import generated.MiParserBaseVisitor;
 import org.antlr.v4.runtime.Token;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -10,6 +11,7 @@ public class AContextual extends MiParserBaseVisitor {
     private SymbolTable tableS;
     private MethodTable tableM;
     private ClassTable tableC;
+    private boolean isNew = false;
 
     public int getNumErrors() {
         return numErrors;
@@ -34,8 +36,7 @@ public class AContextual extends MiParserBaseVisitor {
     // PREVISITAS:
     // methodDecl: (type | VOID) IDENT PARENT_ABIERTO (formPars)? PARENT_CERRADO (varDecl)* block
     public Object previsitMethodDAST(MiParser.MethodDASTContext ctx) {
-        // meter un void o un tipo
-        // verificar si vienen parámetros
+
         ArrayList<ArrayList<String>> params = new ArrayList<>(); // lista con tios de parámetros e identificadores
         ArrayList<Token> typeTokens = new ArrayList<>(); // obtiene el tipo de retorno
 
@@ -44,35 +45,68 @@ public class AContextual extends MiParserBaseVisitor {
         ArrayList<String> isArray = new ArrayList<>();
         /*** seteando encabezado de método: */
         params = (ArrayList<ArrayList<String>>) visit(ctx.formPars());
-        typesParams = params.get(0);
-        identifiersParams = params.get(1);
-        isArray = params.get(2);
-        int lenghtParams = typesParams.size();
-        /*** si retorna algo: */
-        if(ctx.VOID()== null){
-            typeTokens = (ArrayList<Token>)visit(ctx.type());
+
+        if(params!= null) { //método con parámetros
+            typesParams = params.get(0);
+            identifiersParams = params.get(1);
+            isArray = params.get(2);
+            int lenghtParams = typesParams.size();
+            /*** si retorna algo: */
+            if(ctx.VOID()== null){
+                typeTokens = (ArrayList<Token>)visit(ctx.type());
 
 
-            int res = tableM.enter(ctx.IDENT().getText(), typeTokens.get(0).getText(), lenghtParams, typesParams, identifiersParams, isArray);
-            if(res == 1){
-                this.numErrors++;
-                System.out.println("Semantic Error (" + ctx.IDENT().getSymbol().getLine() + ":" + (ctx.IDENT().getSymbol().getCharPositionInLine() + 1)
-                        + "): +++ The method is already declared +++");
+                int res = tableM.enter(ctx.IDENT().getText(), typeTokens.get(0).getText(), lenghtParams, typesParams, identifiersParams, isArray);
+                if(res == 1){
+                    this.numErrors++;
+                    System.out.println("Semantic Error (" + ctx.IDENT().getSymbol().getLine() + ":" + (ctx.IDENT().getSymbol().getCharPositionInLine() + 1)
+                            + "): +++ The method is already declared +++");
+
+                }
+            }
+            /*** si es void: */
+            else{
+                int res = tableM.enter(ctx.IDENT().getText(),"void", lenghtParams, typesParams, identifiersParams, isArray);
+                if(res == 1){
+                    this.numErrors++;
+                    System.out.println("Semantic Error (" + ctx.IDENT().getSymbol().getLine() + ":" + (ctx.IDENT().getSymbol().getCharPositionInLine() + 1)
+                            + "): +++ The method is already declared +++");
+
+                }
 
             }
+
         }
-        /*** si es void: */
         else{
-            int res = tableM.enter(ctx.IDENT().getText(),"void", lenghtParams, typesParams, identifiersParams, isArray);
-            if(res == 1){
-                this.numErrors++;
-                System.out.println("Semantic Error (" + ctx.IDENT().getSymbol().getLine() + ":" + (ctx.IDENT().getSymbol().getCharPositionInLine() + 1)
-                        + "): +++ The method is already declared +++");
+
+            /*** si retorna algo: */
+            if(ctx.VOID()== null){
+                typeTokens = (ArrayList<Token>)visit(ctx.type());
+
+                System.out.println(tableM.toString());
+                int res = tableM.enter(ctx.IDENT().getText(), typeTokens.get(0).getText(), 0, null, null, null);
+                if(res == 1){
+                    this.numErrors++;
+                    System.out.println("Semantic Error (" + ctx.IDENT().getSymbol().getLine() + ":" + (ctx.IDENT().getSymbol().getCharPositionInLine() + 1)
+                            + "): +++ The method is already declared +++");
+
+                }
+            }
+            /*** si es void: */
+            else{
+                int res = tableM.enter(ctx.IDENT().getText(),"void", 0, null, null, null);
+
+                if(res == 1){
+                    this.numErrors++;
+                    System.out.println("Semantic Error (" + ctx.IDENT().getSymbol().getLine() + ":" + (ctx.IDENT().getSymbol().getCharPositionInLine() + 1)
+                            + "): +++ The method is already declared +++");
+
+                }
 
             }
 
         }
-
+        System.out.println(tableM.toString());
         return null;
     }
     public Object previsitClassDAST(MiParser.ClassDASTContext ctx) {
@@ -96,7 +130,7 @@ public class AContextual extends MiParserBaseVisitor {
         for(int i = 0; i<=ctx.methodDecl().size()-1; i++){
             previsitMethodDAST((MiParser.MethodDASTContext) ctx.methodDecl(i));
         }
-        System.out.println("TABLA DE MÉTODOS: \n" +tableM.toString());
+        // System.out.println("TABLA DE MÉTODOS: \n" +tableM.toString());
         /** INICIO DE VISITAS */
         for(int i = 0; i<=ctx.varDecl().size()-1; i++){
             visit(ctx.varDecl(i));
@@ -217,32 +251,22 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitMethodDAST(MiParser.MethodDASTContext ctx) {
 
       //  (type | VOID) IDENT PARENT_ABIERTO (formPars)? PARENT_CERRADO (varDecl)* block
+        /*System.out.println(tableS.toString());
+        System.out.println(tableM.toString());*/
         visit(ctx.block());
         return null; }
 
     @Override public Object visitFormPAST(MiParser.FormPASTContext ctx) {
 
-        // if paramatros == vacio:
-        // haga esto:
         ArrayList<ArrayList<String>> result = new ArrayList<>();
         ArrayList<String> typeParams = new ArrayList<>();
         ArrayList<String> identifierParams = new ArrayList<>();
         ArrayList<String> isArrayParams = new ArrayList<>();
         ArrayList<Token> typeTokens = new ArrayList<>();
-        typeTokens = (ArrayList) visit(ctx.type(0)); // primer parámetro
-        typeParams.add(typeTokens.get(0).getText()); // seteando tipo de primer parámetro obligatorio
-        identifierParams.add(ctx.IDENT(0).getText());
-        if(typeTokens.get(0).getText().equals(typeTokens.get(1).getText())){ // no es arreglo
-
-            isArrayParams.add("false");
-        }
-        else{
-            isArrayParams.add("true");
-        }
-        for(int i = 1; i<=ctx.type().size()-1; i++){
-            typeTokens = (ArrayList) visit(ctx.type(i));
+        if((ArrayList) visit(ctx.type(0))!= null){
+            typeTokens = (ArrayList) visit(ctx.type(0)); // primer parámetro
             typeParams.add(typeTokens.get(0).getText()); // seteando tipo de primer parámetro obligatorio
-            identifierParams.add(ctx.IDENT(i).getText());
+            identifierParams.add(ctx.IDENT(0).getText());
             if(typeTokens.get(0).getText().equals(typeTokens.get(1).getText())){ // no es arreglo
 
                 isArrayParams.add("false");
@@ -250,14 +274,32 @@ public class AContextual extends MiParserBaseVisitor {
             else{
                 isArrayParams.add("true");
             }
+            for(int i = 1; i<=ctx.type().size()-1; i++){
+                typeTokens = (ArrayList) visit(ctx.type(i));
+                typeParams.add(typeTokens.get(0).getText()); // seteando tipo de primer parámetro obligatorio
+                identifierParams.add(ctx.IDENT(i).getText());
+                if(typeTokens.get(0).getText().equals(typeTokens.get(1).getText())){ // no es arreglo
+
+                    isArrayParams.add("false");
+                }
+                else{
+                    isArrayParams.add("true");
+                }
+
+            }
+            // typeTokens = (ArrayList<Token>) visit(ctx.type());
+            // else: envíe listas vacías:
+            result.add(typeParams); // primer parámetro
+            result.add(identifierParams);
+            result.add(isArrayParams);
+            return result;
 
         }
-        // typeTokens = (ArrayList<Token>) visit(ctx.type());
-        // else: envíe listas vacías:
-        result.add(typeParams); // primer parámetro
-        result.add(identifierParams);
-        result.add(isArrayParams);
-        return result;
+        else{
+
+            return null;
+        }
+
     }
 
     @Override public Object visitTypeAST(MiParser.TypeASTContext ctx) {
@@ -276,10 +318,17 @@ public class AContextual extends MiParserBaseVisitor {
 
     @Override public Object visitIfStatAST(MiParser.IfStatASTContext ctx) {
         /* (IF PARENT_ABIERTO condition PARENT_CERRADO statement ( ELSE statement)? ) */
+
         visit(ctx.condition());
-        visit(ctx.statement(0));
-        for(int i = 1; i<ctx.statement().size()-1; i++){
-            visit(ctx.statement(i));
+        if(isNew == true){
+            System.out.println("Can not be a condition with 'NEW' expression");
+            isNew = false;
+        }
+        else{
+            visit(ctx.statement(0));
+            for(int i = 1; i<ctx.statement().size()-1; i++){
+                visit(ctx.statement(i));
+            }
         }
         return null; }
 
@@ -287,8 +336,15 @@ public class AContextual extends MiParserBaseVisitor {
 
     @Override public Object visitWhileStatAST(MiParser.WhileStatASTContext ctx) {
         visit(ctx.condition());
-        visit(ctx.statement());
-        return visitChildren(ctx); }
+        if(isNew == true){
+            System.out.println("Can not be a condition with 'NEW' expression");
+            isNew = false;
+        }
+        else{
+            visit(ctx.statement());
+        }
+
+        return null; }
 
     @Override public Object visitBreakStatAST(MiParser.BreakStatASTContext ctx) { return visitChildren(ctx); }
 
@@ -299,7 +355,7 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitWriteStatAST(MiParser.WriteStatASTContext ctx) { return visitChildren(ctx); }
 
     @Override public Object visitBlockStatAST(MiParser.BlockStatASTContext ctx) {
-        visit(ctx.block());
+       // visit(ctx.block());
         return null; }
 
     @Override public Object visitPycStatAST(MiParser.PycStatASTContext ctx) { return visitChildren(ctx); }
@@ -307,9 +363,11 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitBlockAST(MiParser.BlockASTContext ctx) {
         // CURLY_ABIERTO (statement)* CURLY_CERRADO
         //tableM.openScope();
-        for(int i = 0; i<ctx.statement().size()-1; i++){
+
+        visit(ctx.statement(0));
+        /*for(int i = 0; i<ctx.statement().size()-1; i++){
             visit(ctx.statement(i));
-        }
+        }*/
         //    tableM.closeScope();
         return null; }
 
@@ -317,14 +375,19 @@ public class AContextual extends MiParserBaseVisitor {
 
     @Override public Object visitConditionAST(MiParser.ConditionASTContext ctx) {
         //condTerm (OR condTerm)*
-        visit(ctx.condTerm(0));
-        for(int i = 1; i<ctx.condTerm().size()-1; i++){
-            visit(ctx.condTerm(i));
+
+
+            visit(ctx.condTerm(0));
+            for(int i = 1; i<ctx.condTerm().size()-1; i++){
+                visit(ctx.condTerm(i));
+
         }
+
         return null; }
 
     @Override public Object visitCondTermAST(MiParser.CondTermASTContext ctx) {
        // condFact(AND condFact)*
+
         visit(ctx.condFact(0));
         for(int i = 1; i<ctx.condFact().size()-1; i++){
             visit(ctx.condFact(i));
@@ -334,8 +397,10 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitCondFactAST(MiParser.CondFactASTContext ctx) {
         //expr relop expr
         //relop: IGUALES   | DIFERENTE   | MAYOR  | MAY_IGUAL  | MENOR  | MEN_IGUAL
+
         String expr1= (String) visit (ctx.expr(0)); //OCUPO SABER SI EXPR1 Y EXPR2 CUMPLEN TIPOS SEGUN EL RELOP QUE HAYA
         String expr2= (String) visit (ctx.expr(1));
+        System.out.println("EXPR1: "+ expr1 + "EXPR2: " + expr2);
      //   visit(ctx.relop());
         if(visit(ctx.relop()).equals("==")
             || (visit(ctx.relop()).equals("!=") )){ //EN CASO DE QUE RELOP SEA == o != acepta cualquier tipo
@@ -362,18 +427,54 @@ public class AContextual extends MiParserBaseVisitor {
 
     @Override public Object visitExprAST(MiParser.ExprASTContext ctx) {
         // (RESTA)? term (addop term)*
-        visit(ctx.term(0));
-        for(int i = 1; i<ctx.term().size()-1; i++){
-            visit(ctx.term(i));
+        ArrayList<String> typesList = new ArrayList<>();
+
+        typesList.add((String) visit(ctx.term(0)));
+        for(int i = 1; i<=ctx.term().size()-1; i++){
+            System.out.println("EXPR: "+ (String) visit(ctx.term(i)));
+            typesList.add((String) visit(ctx.term(i)));
         }
-        return null; }
+        // SE VERIFICA QUE LA LISTA SEA DEL MISMO TIPO
+        String tipo1= typesList.get(0);
+        String tipo2="";
+        for(int i = 1; i<=typesList.size()-1; i++){
+            tipo2= typesList.get(i);
+            if (tipo1.equals(tipo2) == false){
+                return "Error"; //por mientras
+
+            }else{
+                tipo1= tipo2;
+            }
+        }
+        return tipo1; }
 
     @Override public Object visitTermAST(MiParser.TermASTContext ctx) {
-        visit(ctx.factor(0));
-        for(int i = 1; i<ctx.factor().size()-1; i++){
-            visit(ctx.factor(i));
+
+        ArrayList<String> typesList = new ArrayList<>();
+
+        typesList.add((String) visit(ctx.factor(0)));
+        for(int i = 1; i<=ctx.factor().size()-1; i++){
+
+            typesList.add((String) visit(ctx.factor(i)));
+
         }
-        return null; }
+        // SE VERIFICA QUE LA LISTA SEA DEL MISMO TIPO
+        String tipo1= typesList.get(0);
+        String tipo2="";
+        if(tipo1 == null ){
+            tipo1 = "Error";
+            return tipo1;
+        }
+        for(int i = 1; i<=typesList.size()-1; i++){
+            tipo2= typesList.get(i);
+            if (tipo1.equals(tipo2) == false){
+                return "Error"; //por mientras
+
+            }else{
+                tipo1= tipo2;
+            }
+        }
+        return tipo1; }
 
     @Override public Object visitDesignatorFactorAST(MiParser.DesignatorFactorASTContext ctx) { return visitChildren(ctx); }
 
@@ -387,7 +488,19 @@ public class AContextual extends MiParserBaseVisitor {
 
         return "bool"; }
 
-    @Override public Object visitNewFactorAST(MiParser.NewFactorASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitNewFactorAST(MiParser.NewFactorASTContext ctx) {
+
+        isNew = true;
+        String tipo = "Error";
+        if((tableC.exists(ctx.IDENT().getText()))){
+            tipo = ctx.IDENT().getText();
+            System.out.println(tipo);
+
+            return tipo;
+        }
+
+        return tipo;
+    }
 
     @Override public Object visitParentFactorAST(MiParser.ParentFactorASTContext ctx) { return visitChildren(ctx); }
 

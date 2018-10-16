@@ -38,7 +38,7 @@ class AllProds
   }
 
   void SetMsg () { //block
-    msg = new char5;
+    msg = new char[5];
     msg[0] = E; 		
     msg[1] = r;		
     msg[2] = r;
