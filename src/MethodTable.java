@@ -76,16 +76,23 @@ public class MethodTable {
             String result = "";
             String result2 = "";
             String result3 = "";
-            for(int i=0; i<=typesParams.size()-1; i++){
-                result+= " "+typesParams.get(i);
+            if(typesParams!= null){
+                for(int i=0; i<=typesParams.size()-1; i++){
+                    result+= " "+typesParams.get(i);
+                }
+                for(int i=0; i<=identifiersList.size()-1; i++){
+                    result2+= " "+identifiersList.get(i);
+                }
+                for(int i=0; i<=isArray.size()-1; i++){
+                    result3+= " "+isArray.get(i);
+                }
+                return "ID: "+this.name+", Type: "+this.returnType+ ", typesParamsList: "+result+ ", idParamsList: "+result2 + ", isArrayParamsList: "+result3 + ", cantidad: "+ this.length+"\n";
+
             }
-            for(int i=0; i<=identifiersList.size()-1; i++){
-                result2+= " "+identifiersList.get(i);
+            else{
+                return "ID: "+this.name+", Type: "+this.returnType + ", no parameters";
             }
-            for(int i=0; i<=isArray.size()-1; i++){
-                result3+= " "+isArray.get(i);
-            }
-            return "ID: "+this.name+", Type: "+this.returnType+ ", typesParamsList: "+result+ ", idParamsList: "+result2 + ", isArrayParamsList: "+result3 + ", cantidad: "+ this.length+"\n";
+
         }
 
     }

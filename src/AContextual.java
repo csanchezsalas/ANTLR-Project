@@ -4,7 +4,6 @@ import org.antlr.v4.runtime.Token;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 public class AContextual extends MiParserBaseVisitor {
 
@@ -45,16 +44,17 @@ public class AContextual extends MiParserBaseVisitor {
         ArrayList<String> identifiersParams = new ArrayList<>();
         ArrayList<String> isArray = new ArrayList<>();
         /*** seteando encabezado de método: */
-        params = (ArrayList<ArrayList<String>>) visit(ctx.formPars());
 
-        if(params!= null) { //método con parámetros
+
+        if(ctx.formPars()!= null) { //método con parámetros
+            params = (ArrayList<ArrayList<String>>) visit(ctx.formPars());
             typesParams = params.get(0);
             identifiersParams = params.get(1);
             isArray = params.get(2);
             int lenghtParams = typesParams.size();
             /*** si retorna algo: */
             if(ctx.VOID()== null){
-                typeTokens = (ArrayList<Token>)visit(ctx.type());
+                typeTokens = (ArrayList<Token>)visit(ctx.type()); // esto no debe ser lista
 
 
                 int res = tableM.enter(ctx.IDENT().getText(), typeTokens.get(0).getText(), lenghtParams, typesParams, identifiersParams, isArray);
@@ -82,10 +82,12 @@ public class AContextual extends MiParserBaseVisitor {
 
             /*** si retorna algo: */
             if(ctx.VOID()== null){
+                /** debug*/
                 typeTokens = (ArrayList<Token>)visit(ctx.type());
 
-                System.out.println(tableM.toString());
+
                 int res = tableM.enter(ctx.IDENT().getText(), typeTokens.get(0).getText(), 0, null, null, null);
+                System.out.println(tableM.toString());
                 if(res == 1){
                     this.numErrors++;
                     System.out.println("Semantic Error (" + ctx.IDENT().getSymbol().getLine() + ":" + (ctx.IDENT().getSymbol().getCharPositionInLine() + 1)
@@ -107,11 +109,11 @@ public class AContextual extends MiParserBaseVisitor {
             }
 
         }
-        System.out.println(tableM.toString());
         return null;
     }
+
     public Object previsitClassDAST(MiParser.ClassDASTContext ctx) {
-        int res = tableC.enter(ctx.IDENT().getText());
+        int res = tableC.enter(ctx.IDENT().getText(), null, null, null);
         if(res == 1){
             this.numErrors++;
             System.out.println("Semantic Error (" + ctx.IDENT().getSymbol().getLine() + ":" + (ctx.IDENT().getSymbol().getCharPositionInLine() + 1)
@@ -121,6 +123,7 @@ public class AContextual extends MiParserBaseVisitor {
 
         return null;
     }
+
     @Override public Object visitProgramAST(MiParser.ProgramASTContext ctx) {
         this.numErrors=0;
         // PREVISITAS:
@@ -185,12 +188,12 @@ public class AContextual extends MiParserBaseVisitor {
 
     @Override public Object visitVarDAST(MiParser.VarDASTContext ctx) {
         ArrayList<Token> typeTokens = (ArrayList<Token>) visit(ctx.type());
-
+        ArrayList<ArrayList<String>> allInfo = new ArrayList<>(); // lista contiene <nombreVariable, tipo, esArreglo?>
         Token tipo = typeTokens.get(0);
         if ((tipo.getText().equals("int"))
                 || (tipo.getText().equals("char"))
                 || (tipo.getText().equals("bool"))
-                || ((tableC.exists(tipo.getText())))) {
+                || ((tableC.exists(tipo.getText())))) { // cualquiera de estos tipos puede ser válido
 
             if(typeTokens.get(0).getText().equals(typeTokens.get(1).getText())){ // no es arreglo
                 for(int i=0; i<=ctx.IDENT().size()-1; i++){
@@ -200,15 +203,24 @@ public class AContextual extends MiParserBaseVisitor {
                         System.out.println("Semantic Error (" + ctx.IDENT(i).getSymbol().getLine() + ":" + (ctx.IDENT(i).getSymbol().getCharPositionInLine() + 1)
                                 + "): +++ The identifier is already declared +++");
                     }
+                    else{ // probar global si no se puede
+                        /** aquí seteo esta lista que me sirve para obtener la info de los atributos de una clase */
+                        ArrayList<String> varInfoTemp = new ArrayList<>();
+                        varInfoTemp.add(ctx.IDENT(i).getText());
+                        varInfoTemp.add(tipo.getText());
+                        varInfoTemp.add("false");
+                        allInfo.add(varInfoTemp);
+
+                    }
                 }
 
             }
-            else{
+            else{ // sí es un arreglo
                 if((tipo.getText().equals("bool")) || (tableC.exists(tipo.getText()))){
                     this.numErrors++;
                     System.out.println("Semantic Error ("
                             + tipo.getLine() + ":" + (tipo.getCharPositionInLine() + 1)
-                            + "): +++ Ooops!! Array type not allowed +++");
+                            + "): +++ Ooops!! Boolean type Array not allowed +++");
 
                 }
                 else{
@@ -218,6 +230,15 @@ public class AContextual extends MiParserBaseVisitor {
                             this.numErrors++;
                             System.out.println("Semantic Error (" + ctx.IDENT(i).getSymbol().getLine() + ":" + (ctx.IDENT(i).getSymbol().getCharPositionInLine() + 1)
                                     + "): +++ The identifier-array is already declared +++");
+                        }
+                        else{
+                            /** aquí seteo esta lista que me sirve para obtener la info de los atributos de una clase */
+                            ArrayList<String> varInfoTemp = new ArrayList<>();
+                            varInfoTemp.add(ctx.IDENT(i).getText());
+                            varInfoTemp.add(tipo.getText());
+                            varInfoTemp.add("true");
+                            allInfo.add(varInfoTemp);
+
                         }
                     }
                 }
@@ -231,21 +252,35 @@ public class AContextual extends MiParserBaseVisitor {
                     + tipo.getLine() + ":" + (tipo.getCharPositionInLine() + 1)
                     + "): +++ Type Unknown +++");
         }
-        return null;
+
+        return allInfo;
 
         // return visitChildren(ctx);
     }
 
 
     @Override public Object visitClassDAST(MiParser.ClassDASTContext ctx) {
+        ArrayList<ArrayList<String>> attributeInfo;
+        ArrayList<String> typesAttr = new ArrayList<>();
+        ArrayList<String> identifiersAttr = new ArrayList<>();
+        ArrayList<String> isArray = new ArrayList<>();
 
         if(ctx.varDecl().size()>0){
             tableS.openScope();
-            for(int i = 0; i<ctx.varDecl().size()-1; i++){
-                visit(ctx.varDecl(i));
+            for(int i = 0; i<=ctx.varDecl().size()-1; i++){
+                attributeInfo = (ArrayList<ArrayList<String>>)visit(ctx.varDecl(i)); // int x, y, z;
+                for(int j =0; j<= attributeInfo.size()-1; j++){
+                    typesAttr.add(attributeInfo.get(j).get(0));
+                    identifiersAttr.add(attributeInfo.get(j).get(1));
+                    isArray.add(attributeInfo.get(j).get(2));
+                }
+
             }
             tableS.closeScope();
         }
+
+        tableC.setClassAttr(ctx.IDENT().getText(), identifiersAttr, typesAttr, isArray); // se setean los atributos a la tabla de clases
+        System.out.println("TABLE C: " + tableC.toString());
         return null;
     }
 
@@ -264,10 +299,21 @@ public class AContextual extends MiParserBaseVisitor {
         ArrayList<String> identifierParams = new ArrayList<>();
         ArrayList<String> isArrayParams = new ArrayList<>();
         ArrayList<Token> typeTokens = new ArrayList<>();
-        if((ArrayList) visit(ctx.type(0))!= null){
-            typeTokens = (ArrayList) visit(ctx.type(0)); // primer parámetro
+
+        typeTokens = (ArrayList) visit(ctx.type(0)); // primer parámetro
+        typeParams.add(typeTokens.get(0).getText()); // seteando tipo de primer parámetro obligatorio
+        identifierParams.add(ctx.IDENT(0).getText());
+        if(typeTokens.get(0).getText().equals(typeTokens.get(1).getText())){ // no es arreglo
+
+            isArrayParams.add("false");
+        }
+        else{
+            isArrayParams.add("true");
+        }
+        for(int i = 1; i<=ctx.type().size()-1; i++){
+            typeTokens = (ArrayList) visit(ctx.type(i));
             typeParams.add(typeTokens.get(0).getText()); // seteando tipo de primer parámetro obligatorio
-            identifierParams.add(ctx.IDENT(0).getText());
+            identifierParams.add(ctx.IDENT(i).getText());
             if(typeTokens.get(0).getText().equals(typeTokens.get(1).getText())){ // no es arreglo
 
                 isArrayParams.add("false");
@@ -275,31 +321,17 @@ public class AContextual extends MiParserBaseVisitor {
             else{
                 isArrayParams.add("true");
             }
-            for(int i = 1; i<=ctx.type().size()-1; i++){
-                typeTokens = (ArrayList) visit(ctx.type(i));
-                typeParams.add(typeTokens.get(0).getText()); // seteando tipo de primer parámetro obligatorio
-                identifierParams.add(ctx.IDENT(i).getText());
-                if(typeTokens.get(0).getText().equals(typeTokens.get(1).getText())){ // no es arreglo
-
-                    isArrayParams.add("false");
-                }
-                else{
-                    isArrayParams.add("true");
-                }
-
-            }
-            // typeTokens = (ArrayList<Token>) visit(ctx.type());
-            // else: envíe listas vacías:
-            result.add(typeParams); // primer parámetro
-            result.add(identifierParams);
-            result.add(isArrayParams);
-            return result;
 
         }
-        else{
+        // typeTokens = (ArrayList<Token>) visit(ctx.type());
+        // else: envíe listas vacías:
+        result.add(typeParams); // primer parámetro
+        result.add(identifierParams);
+        result.add(isArrayParams);
+        return result;
 
-            return null;
-        }
+
+
 
     }
 

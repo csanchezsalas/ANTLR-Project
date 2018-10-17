@@ -1,21 +1,29 @@
 class P
-	int x;
+
 	class miClasesita{
-		int x;
+		int x, y;
 		int z;
+		int[] w;
 	}
-	const char y = 'a';
-	char[] b;
-{
- int metodito (int a)
-	//int x; 
-	{ 		
-	//  b[0]['i'] ++;
-	for( 1; 2<3; break;) { 
-	b[0] ++;
-	}
-	} 
-}
+	
+	
+{ }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
