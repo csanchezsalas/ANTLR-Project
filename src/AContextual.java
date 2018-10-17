@@ -12,7 +12,7 @@ public class AContextual extends MiParserBaseVisitor {
     private ClassTable tableC;
     private boolean isNew = false;
     private boolean forStat=false; //Variable usada en la visita del for
-
+    private String isVoid="void"; //variable usada para la visita del return
     public int getNumErrors() {
         return numErrors;
     }
@@ -295,18 +295,23 @@ public class AContextual extends MiParserBaseVisitor {
 
     @Override public Object visitMethodDAST(MiParser.MethodDASTContext ctx) {
 
-      //  (type | VOID) IDENT PARENT_ABIERTO (formPars)? PARENT_CERRADO (varDecl)* block
         if(ctx.varDecl().size()>0){
             tableS.openScope();
             for (int i= 0; i<= ctx.varDecl().size()-1; i++){
                 visit(ctx.varDecl(i));
             }
+        }
 
-
+        if(ctx.VOID() == null){
+            ArrayList<Token> typeToken = (ArrayList<Token>)visit(ctx.type());
+            isVoid = typeToken.get(0).getText();
+        }
+        else{
+            isVoid = "void";
         }
 
         visit(ctx.block());
-        return null; }
+        return null;}
 
     @Override public Object visitFormPAST(MiParser.FormPASTContext ctx) {
 
@@ -364,34 +369,31 @@ public class AContextual extends MiParserBaseVisitor {
     }
 
     @Override public Object visitDesignatorStatAST(MiParser.DesignatorStatASTContext ctx) {
-        String tipo = (String) visit(ctx.designator());
-        MethodTable.Symbol myMethod = (MethodTable.Symbol) tableM.retrieve(tipo);
-        if(tipo!= null){
-            // evalue parmas
-            ArrayList<String> typesList = myMethod.getTypesList();
-            ArrayList<String> isArrayList = myMethod.getIsArray();
-            int lenght  = myMethod.getLength();
-            ArrayList<String> actParams = (ArrayList<String>) visit(ctx.actPars());
-            if(actParams.size() == lenght){
 
-                for(int i=0 ; i<= actParams.size()-1; i++){
-                    if(actParams.get(i) != typesList.get(i)){
-                        System.out.println("Incompatible parameter's types at funcion" + myMethod.getName());
-                        return "Error";
-                    }
+        String tipo1 = (String) visit(ctx.designator());
+        String tipo2 = (String) visit(ctx.expr());
+        if(ctx.SUMAS() != null || ctx.RESTAS() != null){
+            if(tipo1.equals("int") != true) {
+                this.numErrors++;
+                System.out.println("Semantic Error ("
+                        + "): Incompatible types between: " + tipo1 + " and " + tipo2);
+            }
+        } else if (ctx.IGUAL() != null){ //Si es un: designator IGUAL expr
+
+            if(tipo2.equals("int") | tipo2.equals("char") | tipo2.equals("true") | tipo2.equals("false")){
+                if(!tipo1.equals(tipo2)){
+                    this.numErrors++;
+                    System.out.println("Semantic Error ("
+                            + "): Incompatible types between: " + tipo1 + " and " + tipo2);
                 }
             }
-            else{
-                System.out.println("Missing parameters at funcion" + myMethod.getName());
-                return "Error";
-            }
-        }
-        else{
-            System.out.println("Function " + myMethod.getName() + "not declared!!");
-            return "Error";
-        }
+        }else{
+            System.out.println((String) visit(ctx.designator()));
 
+        }
         return null;
+
+
     }
 
     @Override public Object visitIfStatAST(MiParser.IfStatASTContext ctx) {
@@ -453,17 +455,26 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitBreakStatAST(MiParser.BreakStatASTContext ctx) { return visitChildren(ctx); }
 
     @Override public Object visitReturnStatAST(MiParser.ReturnStatASTContext ctx) {
-        if(ctx.expr()!= null){
+        if(isVoid.equals("void")) {
+            System.out.println("Semantic Error ("
+                    + "): Incompatible return in void function"
+            );
+        }else if(ctx.expr()!= null){
             visit(ctx.expr());
+            if(!((String) visit(ctx.expr())).equals(isVoid)){
+                System.out.println("Semantic Error ("
+                        + "): Incompatible types to return " + ctx.expr().getText()
+                );
+            }
         }
-        return null; }
+        return null;  }
 
     @Override public Object visitReadStatAST(MiParser.ReadStatASTContext ctx) {
-       // visit(ctx.designator());
+        visit(ctx.designator());
         return null; }
 
     @Override public Object visitWriteStatAST(MiParser.WriteStatASTContext ctx) {
-       // visit(ctx.expr());
+        visit(ctx.expr());
         return null; }
 
     @Override public Object visitBlockStatAST(MiParser.BlockStatASTContext ctx) {
@@ -473,11 +484,11 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitPycStatAST(MiParser.PycStatASTContext ctx) { return visitChildren(ctx); }
 
     @Override public Object visitBlockAST(MiParser.BlockASTContext ctx) {
-        // CURLY_ABIERTO (statement)* CURLY_CERRADO
-        visit(ctx.statement(0));
-        /*for(int i = 0; i<ctx.statement().size()-1; i++){
-            visit(ctx.statement(i));
-        }*/
+        if(ctx.statement().size()>0){
+            for(int i = 0; i<=ctx.statement().size()-1; i++){
+                visit(ctx.statement(i));
+            }
+        }
         return null; }
 
     @Override public Object visitActParsAST(MiParser.ActParsASTContext ctx) {
@@ -494,7 +505,7 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitConditionAST(MiParser.ConditionASTContext ctx) {
         //condTerm (OR condTerm)*
             visit(ctx.condTerm(0));
-            for(int i = 1; i<ctx.condTerm().size()-1; i++){
+            for(int i = 1; i<=ctx.condTerm().size()-1; i++){
                 visit(ctx.condTerm(i));
              }
         return null; }
@@ -502,7 +513,7 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitCondTermAST(MiParser.CondTermASTContext ctx) {
        // condFact(AND condFact)*
         visit(ctx.condFact(0));
-        for(int i = 1; i<ctx.condFact().size()-1; i++){
+        for(int i = 1; i<=ctx.condFact().size()-1; i++){
             visit(ctx.condFact(i));
         }
         return null; }
@@ -510,7 +521,7 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitCondFactAST(MiParser.CondFactASTContext ctx) {
         String expr1= (String) visit (ctx.expr(0)); //OCUPO SABER SI EXPR1 Y EXPR2 CUMPLEN TIPOS SEGUN EL RELOP QUE HAYA
         String expr2= (String) visit (ctx.expr(1));
-       //  System.out.println("EXPR1: "+ expr1 + "EXPR2: " + expr2);
+       // System.out.println("EXPR1: "+ expr1 + "EXPR2: " + expr2);
      //   visit(ctx.relop());
         if(visit(ctx.relop()).equals("==")
             || (visit(ctx.relop()).equals("!=") )){ //EN CASO DE QUE RELOP SEA == o != acepta cualquier tipo
@@ -553,7 +564,8 @@ public class AContextual extends MiParserBaseVisitor {
                 tipo1= tipo2;
             }
         }
-        return tipo1; }
+        return tipo1;
+    }
 
     @Override public Object visitTermAST(MiParser.TermASTContext ctx) {
 
@@ -579,7 +591,38 @@ public class AContextual extends MiParserBaseVisitor {
         }
         return tipo1; }
 
-    @Override public Object visitDesignatorFactorAST(MiParser.DesignatorFactorASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitDesignatorFactorAST(MiParser.DesignatorFactorASTContext ctx) {
+        String tipo = (String) visit(ctx.designator());
+        // String result;
+        MethodTable.Symbol myMethod = (MethodTable.Symbol) tableM.retrieve(tipo);
+        if(tipo!= null){
+            // evalue parmas
+            ArrayList<String> typesList = myMethod.getTypesList();
+            ArrayList<String> isArrayList = myMethod.getIsArray();
+            int lenght  = myMethod.getLength();
+            ArrayList<String> actParams = (ArrayList<String>) visit(ctx.actPars());
+            if(actParams.size() == lenght){
+
+                for(int i=0 ; i<= actParams.size()-1; i++){
+                    if(actParams.get(i) != typesList.get(i)){
+                        System.out.println("Incompatible parameter's types at funcion" + myMethod.getName());
+                        return "Incompatible parameter's types at funcion" + myMethod.getName();
+                    }
+                }
+            }
+            else{
+                System.out.println("Missing parameters at funcion" + myMethod.getName());
+                return "Missing parameters at funcion" + myMethod.getName();
+
+            }
+        }
+        else{
+            System.out.println("Function " + myMethod.getName() + "not declared!!");
+            return "Function " + myMethod.getName() + "not declared!!";
+
+        }
+        return tipo;
+    }
 
     @Override public Object visitNumberFactorAST(MiParser.NumberFactorASTContext ctx) {
         return "int"; }
@@ -618,6 +661,7 @@ public class AContextual extends MiParserBaseVisitor {
         String tipo = ctx.IDENT(0).getText(); // se setea el iden inicial
         String tipoTemp = "";
         if((ctx.PUNTO(0)== null) && (ctx.LLAVE_ABIERTA(0) == null)){
+            
             if((tipo!= "int") || (tipo!= "char")){
                 ClassTable.Symbol aux = tableC.retrieve(tipo);
                 if(aux == null){
