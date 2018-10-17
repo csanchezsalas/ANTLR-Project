@@ -1,13 +1,26 @@
 class P
-
+	int x;
+	int a;
+	
 	class miClasesita{
 		int x, y;
 		int z;
 		int[] w;
 	}
-	
-	
-{ }
+	{ void method() int x, y;  {} }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

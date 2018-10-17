@@ -131,6 +131,7 @@ public class AContextual extends MiParserBaseVisitor {
         for(int i = 0; i<=ctx.classDecl().size()-1; i++){
             previsitClassDAST((MiParser.ClassDASTContext) ctx.classDecl(i));
         }
+
         for(int i = 0; i<=ctx.methodDecl().size()-1; i++){
             previsitMethodDAST((MiParser.MethodDASTContext) ctx.methodDecl(i));
         }
@@ -138,18 +139,24 @@ public class AContextual extends MiParserBaseVisitor {
         /** INICIO DE VISITAS */
         for(int i = 0; i<=ctx.varDecl().size()-1; i++){
             visit(ctx.varDecl(i));
+            // tableS.closeScope();
         }
         for(int i = 0; i<=ctx.constDecl().size()-1; i++){
             visit(ctx.constDecl(i));
+            // tableS.closeScope();
         }
         for(int i = 0; i<=ctx.classDecl().size()-1; i++){
             visit(ctx.classDecl(i));
-        }
-        for(int i = 0; i<=ctx.methodDecl().size()-1; i++){
-            visit(ctx.methodDecl(i));
+            tableS.closeScope();
+
         }
 
-        tableS.closeScope();
+        for(int i = 0; i<=ctx.methodDecl().size()-1; i++){
+            visit(ctx.methodDecl(i));
+            tableS.closeScope();
+        }
+
+
         return null;
     }
 
@@ -268,6 +275,7 @@ public class AContextual extends MiParserBaseVisitor {
         if(ctx.varDecl().size()>0){
             tableS.openScope();
             for(int i = 0; i<=ctx.varDecl().size()-1; i++){
+
                 attributeInfo = (ArrayList<ArrayList<String>>)visit(ctx.varDecl(i)); // int x, y, z;
                 for(int j =0; j<= attributeInfo.size()-1; j++){
                     typesAttr.add(attributeInfo.get(j).get(0));
@@ -276,19 +284,27 @@ public class AContextual extends MiParserBaseVisitor {
                 }
 
             }
-            tableS.closeScope();
+
+
         }
+        // tableS.closeScope();
 
         tableC.setClassAttr(ctx.IDENT().getText(), identifiersAttr, typesAttr, isArray); // se setean los atributos a la tabla de clases
-        System.out.println("TABLE C: " + tableC.toString());
         return null;
     }
 
     @Override public Object visitMethodDAST(MiParser.MethodDASTContext ctx) {
 
       //  (type | VOID) IDENT PARENT_ABIERTO (formPars)? PARENT_CERRADO (varDecl)* block
-        /*System.out.println(tableS.toString());
-        System.out.println(tableM.toString());*/
+        if(ctx.varDecl().size()>0){
+            tableS.openScope();
+            for (int i= 0; i<= ctx.varDecl().size()-1; i++){
+                visit(ctx.varDecl(i));
+            }
+
+
+        }
+
         visit(ctx.block());
         return null; }
 
