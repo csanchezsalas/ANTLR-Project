@@ -1,13 +1,41 @@
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 
 public class ClassTable {
     public class Symbol {
         private String name;
-
-        public Symbol(String n) {
+        private ArrayList<String> attributes;
+        private ArrayList<String> typesList;
+        public ArrayList<String> isArray;
+        public Symbol(String n, ArrayList<String> attributes, ArrayList<String> typesList, ArrayList<String> isArray) {
             this.name = n;
+            this.attributes = attributes;
+            this.typesList = typesList;
+            this.isArray = isArray;
+        }
 
+        public ArrayList<String> getIsArray() {
+            return isArray;
+        }
+
+        public void setIsArray(ArrayList<String> isArray) {
+            this.isArray = isArray;
+        }
+
+        public ArrayList<String> getAttributes() {
+            return attributes;
+        }
+        public void setAttributes(ArrayList<String> attributes) {
+            this.attributes = attributes;
+        }
+
+        public ArrayList<String> getTypesList() {
+            return typesList;
+        }
+
+        public void setTypesList(ArrayList<String> typesList) {
+            this.typesList = typesList;
         }
         public String getName() {
             return name;
@@ -15,7 +43,26 @@ public class ClassTable {
 
         @Override
         public String toString(){
-            return "ID:"+this.name;
+
+            String result = "";
+            String result2 = "";
+            String result3 = "";
+            if(this.typesList!= null){
+                for(int i=0; i<=typesList.size()-1; i++){
+                    result+= " "+typesList.get(i);
+                }
+                for(int i=0; i<=attributes.size()-1; i++){
+                    result2+= " "+attributes.get(i);
+                }
+                for(int i=0; i<=isArray.size()-1; i++){
+                    result3+= " "+isArray.get(i);
+                }
+                return "ID: "+this.name+", Type: "+ ", typesParamsList: "+result+ ", attributesList: "+result2 + ", isArrayAttributeList: "+result3+"\n";
+
+            }
+            else{
+                return "ID: "+this.name+ ", no attributes to display";
+            }
         }
     }
 
@@ -25,14 +72,24 @@ public class ClassTable {
     /**
      * Agrega un identificador a la Tabla
      */
-    public int enter(String id) {
+    public int enter(String id, ArrayList<String> attributes, ArrayList<String> typesList, ArrayList<String> isArray) {
         if (!this.exists(id)) {
-            table.add(new ClassTable.Symbol(id));
+            table.add(new ClassTable.Symbol(id, attributes, typesList, isArray));
             return 0; //means id was succesfully inserted in table
         }
         else
             return 1; //means id exists already in table
     }
+    public int setClassAttr(String id, ArrayList<String> attributes, ArrayList<String> typesList, ArrayList<String> isArray){
+        ClassTable.Symbol aux = retrieve(id);
+        int index = table.indexOf(aux); // obtengo índice de obj en la tabla
+        table.get(index).setAttributes(attributes);
+        table.get(index).setTypesList(typesList);
+        table.get(index).setIsArray(isArray);
+
+        return 0;
+    }
+
 
     public boolean exists(String id){
         for (Iterator i = table.descendingIterator(); i.hasNext(); ) {
