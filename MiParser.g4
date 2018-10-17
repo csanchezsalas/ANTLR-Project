@@ -55,7 +55,7 @@ factor: designator (PARENT_ABIERTO (actPars)? PARENT_CERRADO)?                  
         | CHARCONST                                                                                                 #charconsFactorAST
         | BOOL                                                                                                      #boolFactorAST
         | NEW IDENT (LLAVE_ABIERTA NUMBER LLAVE_CERRADA)?                                    #newFactorAST
-        | (PARENT_ABIERTO expr PARENT_CERRADO PUNTO?)                                                               #parentFactorAST;
+        | (PARENT_ABIERTO expr PARENT_CERRADO)                                                               #parentFactorAST;
 
 designator: IDENT ( PUNTO IDENT | LLAVE_ABIERTA expr LLAVE_CERRADA)*                                                #designatorAST;
 

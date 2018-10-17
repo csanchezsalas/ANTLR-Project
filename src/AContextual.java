@@ -289,7 +289,7 @@ public class AContextual extends MiParserBaseVisitor {
         }
         // tableS.closeScope();
 
-        tableC.setClassAttr(ctx.IDENT().getText(), identifiersAttr, typesAttr, isArray); // se setean los atributos a la tabla de clases
+        tableC.setClassAttr(ctx.IDENT().getText(),typesAttr , identifiersAttr, isArray); // se setean los atributos a la tabla de clases
         return null;
     }
 
@@ -363,7 +363,11 @@ public class AContextual extends MiParserBaseVisitor {
         return tokens;
     }
 
-    @Override public Object visitDesignatorStatAST(MiParser.DesignatorStatASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitDesignatorStatAST(MiParser.DesignatorStatASTContext ctx) {
+        visit(ctx.designator());
+
+        return null;
+    }
 
     @Override public Object visitIfStatAST(MiParser.IfStatASTContext ctx) {
         /* (IF PARENT_ABIERTO condition PARENT_CERRADO statement ( ELSE statement)? ) */
@@ -501,7 +505,7 @@ public class AContextual extends MiParserBaseVisitor {
         ArrayList<String> typesList = new ArrayList<>();
         typesList.add((String) visit(ctx.term(0)));
         for(int i = 1; i<=ctx.term().size()-1; i++){
-            System.out.println("EXPR: "+ (String) visit(ctx.term(i)));
+            // System.out.println("EXPR: "+ (String) visit(ctx.term(i)));
             typesList.add((String) visit(ctx.term(i)));
         }
         // SE VERIFICA QUE LA LISTA SEA DEL MISMO TIPO
@@ -569,35 +573,93 @@ public class AContextual extends MiParserBaseVisitor {
         return null; }
 
     @Override public Object visitDesignatorAST(MiParser.DesignatorASTContext ctx) {
+        // designator: IDENT ( PUNTO IDENT | LLAVE_ABIERTA expr LLAVE_CERRADA)*
         forStat=true; //Variable para el visit del for
-        if(ctx.PUNTO(0)!= null){ //verificar que la clase exista si es cn pto, que id2 dentro de id
-            if((tableC.retrieve(ctx.IDENT(0).getText()))!= null){
-                for(int i = 1; i<=ctx.IDENT().size()-1; i++){ //LOS ID QUE SIGUEN IMPORTA SABER EL NOMBRE
-                  // FALTA!! VERIFIQUE QUE EL NOMBRE DEL ID== LISTA DE VARIABLES DE LA CLASE
+
+        /** SE DEBE BUSCAR EN LA LISTA DE IDENT
+         * DESPUÉS SE DEBE VERIFICAR SI ESE TIPO EXISTE DESDE EL SUBINDICE 0 YA SEA TIPO BÁSICO O CLASE
+         * SE BUSCA EN LA LISTA DE EXPRESSIONS PARA DETERMINAR SI SON INTEGERS
+         * AL FINAL ME DEBE DEVOLVER EL TIPO DE DESIGNATOR*/
+        String tipo = ctx.IDENT(0).getText(); // se setea el iden inicial
+        String tipoTemp = "";
+        if((ctx.PUNTO(0)== null) && (ctx.LLAVE_ABIERTA(0) == null)){
+            if((tipo!= "int") || (tipo!= "char")){
+                ClassTable.Symbol aux = tableC.retrieve(tipo);
+                if(aux == null){
+                    System.out.println("Semantic Error (" + ctx.IDENT(0).getSymbol().getLine() + ":" + (ctx.IDENT(0).getSymbol().getCharPositionInLine() + 1)
+                            + "): +++ Wrong Data Type +++");
+                    return "Error";
                 }
-            }else {
-                this.numErrors++;
-                System.out.println("Semantic Error ("
-                        //  + tipo.getLine() + ":" + (tipo.getCharPositionInLine() + 1)
-                        + "): +++ Ooops!! Class not allowed to designator process+++");
+                else{
+                    return tipo;
+                }
             }
-        }else if(ctx.LLAVE_ABIERTA(0)!= null){ //VERIFICAR QUE EL ID EXISTE EN SIMBOLOS Y ES ARRAY
-            for(int i = 0; i<=ctx.LLAVE_ABIERTA().size()-1; i++){
-                if((tableS.retrieve(ctx.IDENT(i).getText()))!= null && (tableS.retrieve(ctx.IDENT(i).getText()).getIsArray()!= false)){
-                    if(visit((ctx.expr(i))) != "int"){ //VERIFICAR QUE EXPR SEA DE TIPO INT
-                        this.numErrors++;
-                        System.out.println("Semantic Error ("
-                                //  + tipo.getLine() + ":" + (tipo.getCharPositionInLine() + 1)
-                                + "): +++ Ooops!! Type in array not allowed+++");
-                    }
-                 }else {
-                    this.numErrors++;
-                    System.out.println("Semantic Error ("
-                            //  + tipo.getLine() + ":" + (tipo.getCharPositionInLine() + 1)
-                            + "): +++ Ooops!! Array not allowed+++");
-            }   }
+            else{
+                return tipo;
+            }
+
         }
-        return null; }
+        else{
+            // CICLO PARA ID.ID O PARA [CORCHETE][CORCHETE]
+
+            // tipoTemp = tipo;
+
+            ArrayList<String> attributes;
+            ArrayList<String> types;
+            int index;
+            SymbolTable.Symbol auxSymbol = tableS.retrieve(tipo); // primer dato que trae clase.algo
+            // si auxsymbol != null
+            tipo = auxSymbol.getType();
+            for(int i= 1; i <= ctx.IDENT().size()-1; i++){ // verificar si ese tipo es un tipo válido
+
+                ClassTable.Symbol auxSymbol2 = tableC.retrieve(tipo);
+                if(auxSymbol2 == null){
+                    System.out.println("Semantic Error (" + ctx.IDENT(0).getSymbol().getLine() + ":" + (ctx.IDENT(0).getSymbol().getCharPositionInLine() + 1)
+                            + "): +++ Unknown Class  +++");
+                    return "Error";
+                }
+
+                else{
+                    // ClassTable.Symbol auxSymbol2 = tableC.retrieve(auxSymbol.getType());
+                    attributes = auxSymbol2.getAttributes(); // atributos del symbol en cuestión
+                    types = auxSymbol2.getTypesList();
+
+                    if( !attributes.contains( ctx.IDENT(i).getText())){ // si no está el tipo en la tabla de clases
+                        System.out.println("Semantic Error (" + ctx.IDENT(0).getSymbol().getLine() + ":" + (ctx.IDENT(0).getSymbol().getCharPositionInLine() + 1)
+                                + "): +++ Class has no " + ctx.IDENT(i).getText() + " member +++");
+                        return "Error";
+
+                    }
+                    else{
+                        index = attributes.indexOf(ctx.IDENT(i).getText());
+                        tipo = types.get(index);
+
+                        // auxSymbol = tableS.retrieve(tipo);
+
+
+                    }
+
+
+                }
+            }
+
+            if( ctx.expr().size()>0){ // si hay expresiones
+
+                for(int i = 0; i<= ctx.expr().size()-1; i++){
+                    String exprType = (String) visit(ctx.expr(i));
+                    if(exprType != "int"){
+                        System.out.println("Semantic Error (" + ctx.IDENT(0).getSymbol().getLine() + ":" + (ctx.IDENT(0).getSymbol().getCharPositionInLine() + 1)
+                                + "): +++ Index Array Type should be a number instead got" + exprType);
+                        return "Error";
+                    }
+                }
+            }
+
+
+        }
+
+        return tipo;
+    }
 
     @Override public Object visitIgualesRelopAST(MiParser.IgualesRelopASTContext ctx) {
 
