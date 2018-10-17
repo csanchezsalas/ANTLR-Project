@@ -364,7 +364,32 @@ public class AContextual extends MiParserBaseVisitor {
     }
 
     @Override public Object visitDesignatorStatAST(MiParser.DesignatorStatASTContext ctx) {
-        visit(ctx.designator());
+        String tipo = (String) visit(ctx.designator());
+        MethodTable.Symbol myMethod = (MethodTable.Symbol) tableM.retrieve(tipo);
+        if(tipo!= null){
+            // evalue parmas
+            ArrayList<String> typesList = myMethod.getTypesList();
+            ArrayList<String> isArrayList = myMethod.getIsArray();
+            int lenght  = myMethod.getLength();
+            ArrayList<String> actParams = (ArrayList<String>) visit(ctx.actPars());
+            if(actParams.size() == lenght){
+
+                for(int i=0 ; i<= actParams.size()-1; i++){
+                    if(actParams.get(i) != typesList.get(i)){
+                        System.out.println("Incompatible parameter's types at funcion" + myMethod.getName());
+                        return "Error";
+                    }
+                }
+            }
+            else{
+                System.out.println("Missing parameters at funcion" + myMethod.getName());
+                return "Error";
+            }
+        }
+        else{
+            System.out.println("Function " + myMethod.getName() + "not declared!!");
+            return "Error";
+        }
 
         return null;
     }
@@ -455,7 +480,16 @@ public class AContextual extends MiParserBaseVisitor {
         }*/
         return null; }
 
-    @Override public Object visitActParsAST(MiParser.ActParsASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitActParsAST(MiParser.ActParsASTContext ctx) {
+        ArrayList<String> paramsList = new ArrayList<>(); //lista devuelve el tipo de cada expresión
+        visit(ctx.expr(0));
+        paramsList.add((String) visit(ctx.expr(0)));
+        for(int i = 1; i<=ctx.expr().size()-1; i++){
+            visit(ctx.expr(i));
+            paramsList.add((String) visit(ctx.expr(i)));
+        }
+        return paramsList;
+    }
 
     @Override public Object visitConditionAST(MiParser.ConditionASTContext ctx) {
         //condTerm (OR condTerm)*
@@ -476,7 +510,7 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitCondFactAST(MiParser.CondFactASTContext ctx) {
         String expr1= (String) visit (ctx.expr(0)); //OCUPO SABER SI EXPR1 Y EXPR2 CUMPLEN TIPOS SEGUN EL RELOP QUE HAYA
         String expr2= (String) visit (ctx.expr(1));
-        System.out.println("EXPR1: "+ expr1 + "EXPR2: " + expr2);
+       //  System.out.println("EXPR1: "+ expr1 + "EXPR2: " + expr2);
      //   visit(ctx.relop());
         if(visit(ctx.relop()).equals("==")
             || (visit(ctx.relop()).equals("!=") )){ //EN CASO DE QUE RELOP SEA == o != acepta cualquier tipo
@@ -573,8 +607,9 @@ public class AContextual extends MiParserBaseVisitor {
         return null; }
 
     @Override public Object visitDesignatorAST(MiParser.DesignatorASTContext ctx) {
-        // designator: IDENT ( PUNTO IDENT | LLAVE_ABIERTA expr LLAVE_CERRADA)*
+
         forStat=true; //Variable para el visit del for
+        String isArrayBool = "false";
 
         /** SE DEBE BUSCAR EN LA LISTA DE IDENT
          * DESPUÉS SE DEBE VERIFICAR SI ESE TIPO EXISTE DESDE EL SUBINDICE 0 YA SEA TIPO BÁSICO O CLASE
@@ -606,6 +641,7 @@ public class AContextual extends MiParserBaseVisitor {
 
             ArrayList<String> attributes;
             ArrayList<String> types;
+            ArrayList<String> isArray;
             int index;
             SymbolTable.Symbol auxSymbol = tableS.retrieve(tipo); // primer dato que trae clase.algo
             // si auxsymbol != null
@@ -623,6 +659,7 @@ public class AContextual extends MiParserBaseVisitor {
                     // ClassTable.Symbol auxSymbol2 = tableC.retrieve(auxSymbol.getType());
                     attributes = auxSymbol2.getAttributes(); // atributos del symbol en cuestión
                     types = auxSymbol2.getTypesList();
+                    isArray = auxSymbol2.getIsArray();
 
                     if( !attributes.contains( ctx.IDENT(i).getText())){ // si no está el tipo en la tabla de clases
                         System.out.println("Semantic Error (" + ctx.IDENT(0).getSymbol().getLine() + ":" + (ctx.IDENT(0).getSymbol().getCharPositionInLine() + 1)
@@ -633,6 +670,7 @@ public class AContextual extends MiParserBaseVisitor {
                     else{
                         index = attributes.indexOf(ctx.IDENT(i).getText());
                         tipo = types.get(index);
+                        isArrayBool = isArray.get(index);
 
                         // auxSymbol = tableS.retrieve(tipo);
 
@@ -642,9 +680,7 @@ public class AContextual extends MiParserBaseVisitor {
 
                 }
             }
-
-            if( ctx.expr().size()>0){ // si hay expresiones
-
+            if((isArrayBool == "true") && (ctx.expr().size()>0)){
                 for(int i = 0; i<= ctx.expr().size()-1; i++){
                     String exprType = (String) visit(ctx.expr(i));
                     if(exprType != "int"){
@@ -653,6 +689,12 @@ public class AContextual extends MiParserBaseVisitor {
                         return "Error";
                     }
                 }
+
+            }
+            else if((isArrayBool == "false") && (ctx.expr().size()>0)){
+                System.out.println("Semantic Error (" + ctx.IDENT(0).getSymbol().getLine() + ":" + (ctx.IDENT(0).getSymbol().getCharPositionInLine() + 1)
+                        + "): +++ Class member is not type Array");
+                return "Error";
             }
 
 

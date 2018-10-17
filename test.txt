@@ -10,9 +10,15 @@ class P
 	}
 	class prueba{ int m;}
 	{ void method() int h, r; miClasesita p;  {
-		if (1 == 1)  p.z[2] = 2
+		if (1 == 1)  p.z[1] = 1
 	}
 	} 
+
+// SI EL MIEMBRO DE ESA CLASE NO DE TIPO ARREGLO SE ENVIA ERROR
+// SI LA CLASE NO TIENE UN MIEMBRO 'X' SE ENVIA ERROR
+
+
+
 
 
 
