@@ -27,7 +27,7 @@ type: IDENT (LLAVE_ABIERTA LLAVE_CERRADA)?                                      
 
 statement: designator (IGUAL expr | PARENT_ABIERTO (actPars)? PARENT_CERRADO | SUMAS | RESTAS) PYC?                  #designatorStatAST
             | (IF PARENT_ABIERTO condition PARENT_CERRADO statement ( ELSE statement)? )                            #ifStatAST
-            | (FOR PARENT_ABIERTO expr PYC (condition)? PYC (statement)? PARENT_CERRADO statement)                                 #forStatAST
+            | (FOR PARENT_ABIERTO expr (PYC condition)? (PYC statement)? PARENT_CERRADO statement)                                 #forStatAST
             | (WHILE PARENT_ABIERTO condition PARENT_CERRADO statement)                                             #whileStatAST
             | (BREAK PYC)                                                                                           #breakStatAST
             | (RETURN (expr)? PYC)                                                                                  #returnStatAST

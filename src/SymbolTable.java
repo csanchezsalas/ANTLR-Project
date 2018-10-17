@@ -29,6 +29,9 @@ public class SymbolTable {
         public String getType() {
             return type;
         }
+        public boolean getIsArray() {
+            return isArray;
+        }
 
         @Override
         public String toString(){
@@ -51,7 +54,7 @@ public class SymbolTable {
             return 1; //means id exists already in table
     }
 
-    private boolean exists(String id, int level){
+    public boolean exists(String id, int level){
         for (Iterator i = table.descendingIterator(); i.hasNext(); ) {
             Symbol aux = (Symbol) i.next();
             if (aux.getName().equals(id))

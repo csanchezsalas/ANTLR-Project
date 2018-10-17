@@ -12,6 +12,7 @@ public class AContextual extends MiParserBaseVisitor {
     private MethodTable tableM;
     private ClassTable tableC;
     private boolean isNew = false;
+    private boolean forStat=false; //Variable usada en la visita del for
 
     public int getNumErrors() {
         return numErrors;
@@ -332,7 +333,33 @@ public class AContextual extends MiParserBaseVisitor {
         }
         return null; }
 
-    @Override public Object visitForStatAST(MiParser.ForStatASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitForStatAST(MiParser.ForStatASTContext ctx) {
+        if(((String) visit(ctx.expr())).equals("int") ){
+            if(ctx.condition()!=null){
+                visit(ctx.condition());
+            }
+            if(ctx.statement(0)!=null && ctx.statement(1)!=null){
+                visit(ctx.statement(0)); //solo puede ser de tipo designator
+                if(forStat != true){ //VERIFICA QUE DENTRO DEL FOR, EL 3 DATO NO SEA DE TIPO FOR, WHILE, ETC
+                    this.numErrors++;
+                    System.out.println("Semantic Error ("
+                            + "): Incompatible types in params of for"
+                             );
+                }
+                else{
+                    visit(ctx.statement(1));
+                    forStat=false;
+                }
+            }else{ //En caso de que exista solo un statement
+                visit(ctx.statement(0));
+            }
+        }else{
+            this.numErrors++;
+            System.out.println("Semantic Error ("
+                    + "): Incompatible types in 'FOR' statement, int required:"
+                    + ctx.expr().getText()  );
+        }
+        return null; }
 
     @Override public Object visitWhileStatAST(MiParser.WhileStatASTContext ctx) {
         visit(ctx.condition());
@@ -348,46 +375,46 @@ public class AContextual extends MiParserBaseVisitor {
 
     @Override public Object visitBreakStatAST(MiParser.BreakStatASTContext ctx) { return visitChildren(ctx); }
 
-    @Override public Object visitReturnStatAST(MiParser.ReturnStatASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitReturnStatAST(MiParser.ReturnStatASTContext ctx) {
+        if(ctx.expr()!= null){
+            visit(ctx.expr());
+        }
+        return null; }
 
-    @Override public Object visitReadStatAST(MiParser.ReadStatASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitReadStatAST(MiParser.ReadStatASTContext ctx) {
+       // visit(ctx.designator());
+        return null; }
 
-    @Override public Object visitWriteStatAST(MiParser.WriteStatASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitWriteStatAST(MiParser.WriteStatASTContext ctx) {
+       // visit(ctx.expr());
+        return null; }
 
     @Override public Object visitBlockStatAST(MiParser.BlockStatASTContext ctx) {
-       // visit(ctx.block());
+        visit(ctx.block());
         return null; }
 
     @Override public Object visitPycStatAST(MiParser.PycStatASTContext ctx) { return visitChildren(ctx); }
 
     @Override public Object visitBlockAST(MiParser.BlockASTContext ctx) {
         // CURLY_ABIERTO (statement)* CURLY_CERRADO
-        //tableM.openScope();
-
         visit(ctx.statement(0));
         /*for(int i = 0; i<ctx.statement().size()-1; i++){
             visit(ctx.statement(i));
         }*/
-        //    tableM.closeScope();
         return null; }
 
     @Override public Object visitActParsAST(MiParser.ActParsASTContext ctx) { return visitChildren(ctx); }
 
     @Override public Object visitConditionAST(MiParser.ConditionASTContext ctx) {
         //condTerm (OR condTerm)*
-
-
             visit(ctx.condTerm(0));
             for(int i = 1; i<ctx.condTerm().size()-1; i++){
                 visit(ctx.condTerm(i));
-
-        }
-
+             }
         return null; }
 
     @Override public Object visitCondTermAST(MiParser.CondTermASTContext ctx) {
        // condFact(AND condFact)*
-
         visit(ctx.condFact(0));
         for(int i = 1; i<ctx.condFact().size()-1; i++){
             visit(ctx.condFact(i));
@@ -395,9 +422,6 @@ public class AContextual extends MiParserBaseVisitor {
         return null; }
 
     @Override public Object visitCondFactAST(MiParser.CondFactASTContext ctx) {
-        //expr relop expr
-        //relop: IGUALES   | DIFERENTE   | MAYOR  | MAY_IGUAL  | MENOR  | MEN_IGUAL
-
         String expr1= (String) visit (ctx.expr(0)); //OCUPO SABER SI EXPR1 Y EXPR2 CUMPLEN TIPOS SEGUN EL RELOP QUE HAYA
         String expr2= (String) visit (ctx.expr(1));
         System.out.println("EXPR1: "+ expr1 + "EXPR2: " + expr2);
@@ -422,13 +446,11 @@ public class AContextual extends MiParserBaseVisitor {
                         + expr1 + " and " + expr2);
             }
         }
-
         return null; }
 
     @Override public Object visitExprAST(MiParser.ExprASTContext ctx) {
         // (RESTA)? term (addop term)*
         ArrayList<String> typesList = new ArrayList<>();
-
         typesList.add((String) visit(ctx.term(0)));
         for(int i = 1; i<=ctx.term().size()-1; i++){
             System.out.println("EXPR: "+ (String) visit(ctx.term(i)));
@@ -441,7 +463,6 @@ public class AContextual extends MiParserBaseVisitor {
             tipo2= typesList.get(i);
             if (tipo1.equals(tipo2) == false){
                 return "Error"; //por mientras
-
             }else{
                 tipo1= tipo2;
             }
@@ -451,12 +472,9 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitTermAST(MiParser.TermASTContext ctx) {
 
         ArrayList<String> typesList = new ArrayList<>();
-
         typesList.add((String) visit(ctx.factor(0)));
         for(int i = 1; i<=ctx.factor().size()-1; i++){
-
             typesList.add((String) visit(ctx.factor(i)));
-
         }
         // SE VERIFICA QUE LA LISTA SEA DEL MISMO TIPO
         String tipo1= typesList.get(0);
@@ -468,8 +486,7 @@ public class AContextual extends MiParserBaseVisitor {
         for(int i = 1; i<=typesList.size()-1; i++){
             tipo2= typesList.get(i);
             if (tipo1.equals(tipo2) == false){
-                return "Error"; //por mientras
-
+                return "Error";
             }else{
                 tipo1= tipo2;
             }
@@ -489,22 +506,50 @@ public class AContextual extends MiParserBaseVisitor {
         return "bool"; }
 
     @Override public Object visitNewFactorAST(MiParser.NewFactorASTContext ctx) {
-
         isNew = true;
         String tipo = "Error";
         if((tableC.exists(ctx.IDENT().getText()))){
             tipo = ctx.IDENT().getText();
             System.out.println(tipo);
-
             return tipo;
         }
-
         return tipo;
     }
 
-    @Override public Object visitParentFactorAST(MiParser.ParentFactorASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitParentFactorAST(MiParser.ParentFactorASTContext ctx) {
+        visit(ctx.expr());
+        return null; }
 
-    @Override public Object visitDesignatorAST(MiParser.DesignatorASTContext ctx) { return visitChildren(ctx); }
+    @Override public Object visitDesignatorAST(MiParser.DesignatorASTContext ctx) {
+        forStat=true; //Variable para el visit del for
+        if(ctx.PUNTO(0)!= null){ //verificar que la clase exista si es cn pto, que id2 dentro de id
+            if((tableC.retrieve(ctx.IDENT(0).getText()))!= null){
+                for(int i = 1; i<=ctx.IDENT().size()-1; i++){ //LOS ID QUE SIGUEN IMPORTA SABER EL NOMBRE
+                  // FALTA!! VERIFIQUE QUE EL NOMBRE DEL ID== LISTA DE VARIABLES DE LA CLASE
+                }
+            }else {
+                this.numErrors++;
+                System.out.println("Semantic Error ("
+                        //  + tipo.getLine() + ":" + (tipo.getCharPositionInLine() + 1)
+                        + "): +++ Ooops!! Class not allowed to designator process+++");
+            }
+        }else if(ctx.LLAVE_ABIERTA(0)!= null){ //VERIFICAR QUE EL ID EXISTE EN SIMBOLOS Y ES ARRAY
+            for(int i = 0; i<=ctx.LLAVE_ABIERTA().size()-1; i++){
+                if((tableS.retrieve(ctx.IDENT(i).getText()))!= null && (tableS.retrieve(ctx.IDENT(i).getText()).getIsArray()!= false)){
+                    if(visit((ctx.expr(i))) != "int"){ //VERIFICAR QUE EXPR SEA DE TIPO INT
+                        this.numErrors++;
+                        System.out.println("Semantic Error ("
+                                //  + tipo.getLine() + ":" + (tipo.getCharPositionInLine() + 1)
+                                + "): +++ Ooops!! Type in array not allowed+++");
+                    }
+                 }else {
+                    this.numErrors++;
+                    System.out.println("Semantic Error ("
+                            //  + tipo.getLine() + ":" + (tipo.getCharPositionInLine() + 1)
+                            + "): +++ Ooops!! Array not allowed+++");
+            }   }
+        }
+        return null; }
 
     @Override public Object visitIgualesRelopAST(MiParser.IgualesRelopASTContext ctx) {
 
