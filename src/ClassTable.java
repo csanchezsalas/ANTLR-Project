@@ -57,7 +57,7 @@ public class ClassTable {
                 for(int i=0; i<=isArray.size()-1; i++){
                     result3+= " "+isArray.get(i);
                 }
-                return "ID: "+this.name+", Type: "+ ", typesParamsList: "+result+ ", attributesList: "+result2 + ", isArrayAttributeList: "+result3+"\n";
+                return "ID: "+this.name+ ", attributesList: "+result+ ", typesParamsList: "+result2 + ", isArrayAttributeList: "+result3+"\n";
 
             }
             else{
