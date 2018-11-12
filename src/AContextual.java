@@ -36,17 +36,32 @@ public class AContextual extends MiParserBaseVisitor {
     // PREVISITAS:
     // methodDecl: (type | VOID) IDENT PARENT_ABIERTO (formPars)? PARENT_CERRADO (varDecl)* block
     public Object previsitMethodDAST(MiParser.MethodDASTContext ctx) {
-
+        // tableS.openScope();
         ArrayList<ArrayList<String>> params = new ArrayList<>(); // lista con tios de parámetros e identificadores
         ArrayList<Token> typeTokens = new ArrayList<>(); // obtiene el tipo de retorno
 
         ArrayList<String> typesParams = new ArrayList<>();
         ArrayList<String> identifiersParams = new ArrayList<>();
         ArrayList<String> isArray = new ArrayList<>();
-        /*** seteando encabezado de método: */
 
+        /** seteando funciones por defecto*/
+        typesParams.add("char");
+        tableM.enter("ord", "int", 1, typesParams, null, null);
+        typesParams.clear();
+        typesParams.add("int");
+        tableM.enter("chr", "char", 1, typesParams, null, null);
+        typesParams.clear();
+        typesParams.add("int");
+        typesParams.add("char");
+        isArray.add("true");
+        tableM.enter("len", "int", 1, typesParams, null, isArray);
+        /*** seteando encabezado de método: */
+        typesParams.clear();
+        identifiersParams.clear();
+        isArray.clear();
 
         if(ctx.formPars()!= null) { //método con parámetros
+
             params = (ArrayList<ArrayList<String>>) visit(ctx.formPars());
             typesParams = params.get(0);
             identifiersParams = params.get(1);
@@ -109,6 +124,7 @@ public class AContextual extends MiParserBaseVisitor {
             }
 
         }
+
         return null;
     }
 
@@ -145,6 +161,7 @@ public class AContextual extends MiParserBaseVisitor {
             visit(ctx.constDecl(i));
             // tableS.closeScope();
         }
+
         for(int i = 0; i<=ctx.classDecl().size()-1; i++){
             visit(ctx.classDecl(i));
             tableS.closeScope();
@@ -152,6 +169,7 @@ public class AContextual extends MiParserBaseVisitor {
         }
 
         for(int i = 0; i<=ctx.methodDecl().size()-1; i++){
+
             visit(ctx.methodDecl(i));
             tableS.closeScope();
         }
@@ -287,16 +305,16 @@ public class AContextual extends MiParserBaseVisitor {
 
 
         }
-        // tableS.closeScope();
+
 
         tableC.setClassAttr(ctx.IDENT().getText(),typesAttr , identifiersAttr, isArray); // se setean los atributos a la tabla de clases
         return null;
     }
 
     @Override public Object visitMethodDAST(MiParser.MethodDASTContext ctx) {
-
+        // tableS.openScope();
         if(ctx.varDecl().size()>0){
-            tableS.openScope();
+
             for (int i= 0; i<= ctx.varDecl().size()-1; i++){
                 visit(ctx.varDecl(i));
             }
@@ -305,12 +323,14 @@ public class AContextual extends MiParserBaseVisitor {
         if(ctx.VOID() == null){
             ArrayList<Token> typeToken = (ArrayList<Token>)visit(ctx.type());
             isVoid = typeToken.get(0).getText();
+            System.out.println("MET TYPE" + typeToken.get(0).getText());
         }
         else{
             isVoid = "void";
         }
 
         visit(ctx.block());
+
         return null;}
 
     @Override public Object visitFormPAST(MiParser.FormPASTContext ctx) {
@@ -331,6 +351,7 @@ public class AContextual extends MiParserBaseVisitor {
         else{
             isArrayParams.add("true");
         }
+
         for(int i = 1; i<=ctx.type().size()-1; i++){
             typeTokens = (ArrayList) visit(ctx.type(i));
             typeParams.add(typeTokens.get(0).getText()); // seteando tipo de primer parámetro obligatorio
@@ -344,6 +365,7 @@ public class AContextual extends MiParserBaseVisitor {
             }
 
         }
+
         // typeTokens = (ArrayList<Token>) visit(ctx.type());
         // else: envíe listas vacías:
         result.add(typeParams); // primer parámetro
@@ -423,7 +445,7 @@ public class AContextual extends MiParserBaseVisitor {
                     this.numErrors++;
                     System.out.println("Semantic Error ("
                             + "): Incompatible types in params of for"
-                             );
+                    );
                 }
                 else{
                     visit(ctx.statement(1));
@@ -504,14 +526,14 @@ public class AContextual extends MiParserBaseVisitor {
 
     @Override public Object visitConditionAST(MiParser.ConditionASTContext ctx) {
         //condTerm (OR condTerm)*
-            visit(ctx.condTerm(0));
-            for(int i = 1; i<=ctx.condTerm().size()-1; i++){
-                visit(ctx.condTerm(i));
-             }
+        visit(ctx.condTerm(0));
+        for(int i = 1; i<=ctx.condTerm().size()-1; i++){
+            visit(ctx.condTerm(i));
+        }
         return null; }
 
     @Override public Object visitCondTermAST(MiParser.CondTermASTContext ctx) {
-       // condFact(AND condFact)*
+        // condFact(AND condFact)*
         visit(ctx.condFact(0));
         for(int i = 1; i<=ctx.condFact().size()-1; i++){
             visit(ctx.condFact(i));
@@ -521,14 +543,14 @@ public class AContextual extends MiParserBaseVisitor {
     @Override public Object visitCondFactAST(MiParser.CondFactASTContext ctx) {
         String expr1= (String) visit (ctx.expr(0)); //OCUPO SABER SI EXPR1 Y EXPR2 CUMPLEN TIPOS SEGUN EL RELOP QUE HAYA
         String expr2= (String) visit (ctx.expr(1));
-       // System.out.println("EXPR1: "+ expr1 + "EXPR2: " + expr2);
-     //   visit(ctx.relop());
+        // System.out.println("EXPR1: "+ expr1 + "EXPR2: " + expr2);
+        //   visit(ctx.relop());
         if(visit(ctx.relop()).equals("==")
-            || (visit(ctx.relop()).equals("!=") )){ //EN CASO DE QUE RELOP SEA == o != acepta cualquier tipo
+                || (visit(ctx.relop()).equals("!=") )){ //EN CASO DE QUE RELOP SEA == o != acepta cualquier tipo
             if (expr1.equals(expr2)==false) {
                 this.numErrors++;
                 System.out.println("Semantic Error ("
-                         + "): Incompatible types in expression between "
+                        + "): Incompatible types in expression between "
                         + expr1 + " and " + expr2);
             }
         } else if(visit(ctx.relop()).equals(">") //EN CASO DE QUE RELOP SEA >, >=, <, <=
@@ -536,7 +558,7 @@ public class AContextual extends MiParserBaseVisitor {
                 || visit(ctx.relop()).equals("<")
                 || visit(ctx.relop()).equals("<=")) {
             if (expr1.equals("char") || expr1.equals("bool")
-                || expr2.equals("char") || expr2.equals("bool") ) { //solo sirve para int
+                    || expr2.equals("char") || expr2.equals("bool") ) { //solo sirve para int
                 this.numErrors++;
                 System.out.println("Semantic Error ("
                         + "): Incompatible types, just ints pls! "
@@ -659,20 +681,29 @@ public class AContextual extends MiParserBaseVisitor {
          * SE BUSCA EN LA LISTA DE EXPRESSIONS PARA DETERMINAR SI SON INTEGERS
          * AL FINAL ME DEBE DEVOLVER EL TIPO DE DESIGNATOR*/
         String tipo = ctx.IDENT(0).getText(); // se setea el iden inicial
-        String tipoTemp = "";
+
         if((ctx.PUNTO(0)== null) && (ctx.LLAVE_ABIERTA(0) == null)){
-            
+            SymbolTable.Symbol auxSymbol = tableS.retrieve(tipo);
+            String tipoAuxSymbol;
+            if(auxSymbol!= null){
+                tipoAuxSymbol = auxSymbol.getType();
+                if(tipoAuxSymbol != null){ // si es parámetro
+                    return tipoAuxSymbol;
+                }
+            }
+
             if((tipo!= "int") || (tipo!= "char")){
                 ClassTable.Symbol aux = tableC.retrieve(tipo);
                 if(aux == null){
                     System.out.println("Semantic Error (" + ctx.IDENT(0).getSymbol().getLine() + ":" + (ctx.IDENT(0).getSymbol().getCharPositionInLine() + 1)
-                            + "): +++ Wrong Data Type +++");
+                            + "): +++ Wrong Data Type || Variable not declared +++");
                     return "Error";
                 }
                 else{
                     return tipo;
                 }
             }
+
             else{
                 return tipo;
             }

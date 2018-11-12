@@ -34,6 +34,7 @@ public class IDE {
     CommonTokenStream tokens = null; //"string" de tokens
     MyErrorListener errorListener = null;
     AContextual v = null;
+    CodeGen c = null;
 
     public IDE() {
         JFrame frame = new JFrame("PARSER PROJECT");
@@ -105,6 +106,8 @@ public class IDE {
                             try { /** ADAPTACIÓN DEL ANÁLISIS SEMÁNTICO */
                                 v = new AContextual();
                                 v.visit(tree);
+                                c = new CodeGen();
+                                c.visit(tree);
                             }
                             catch(Exception f) {
                             }

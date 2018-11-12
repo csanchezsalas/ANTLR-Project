@@ -48,6 +48,7 @@ public class SymbolTable {
     public int enter(String id, String tipo, boolean isArray) {
         if (!this.exists(id,actualLevel)) {
             table.add(new Symbol(id, tipo, actualLevel, isArray));
+           //  System.out.println(table.toString());
             return 0; //means id was succesfully inserted in table
         }
         else
