@@ -8,6 +8,7 @@ public class ByteCodeG extends MiParserBaseVisitor {
    ArrayList<ArrayList> myCodeGen = new ArrayList<>();
    ArrayList<String> globals = new ArrayList<>();
    boolean inMethod= false;
+   int index= -1;
 
     public ByteCodeG() {
     }
@@ -35,16 +36,49 @@ public class ByteCodeG extends MiParserBaseVisitor {
     }
 
     @Override public Object visitVarDAST(MiParser.VarDASTContext ctx) {
+        ArrayList<String>code= new ArrayList<>();
+        ArrayList<Token> typeTokens = (ArrayList<Token>) visit(ctx.type());
+        Token tipo = typeTokens.get(0);
 
+        if (inMethod == true){
+            if (tipo.getText().equals("int") ){
+                for(int i = 0; i< ctx.IDENT().size(); i++){
+                    index ++;
+                    code.add(index+ " PUSH_LOCAL_I "+ctx.IDENT(i).getText());
+                }
+            }else{
+                for(int i = 0; i< ctx.IDENT().size(); i++) {
+                    index ++;
+                    code.add(index +" PUSH_LOCAL_C "+ctx.IDENT(i).getText());
+                }
+            }
+        }else{
+            if (tipo.getText().equals("int") ){
+                for(int i = 0; i< ctx.IDENT().size(); i++){
+                    index ++;
+                    code.add(index+ " PUSH_GLOBAL_I "+ctx.IDENT(i).getText());
+                    globals.add(ctx.IDENT(i).getText());
+                }
+                myCodeGen.add(code);
+            }else{
+                for(int i = 0; i< ctx.IDENT().size(); i++) {
+                    index ++;
+                    code.add(index+ " PUSH_GLOBAL_C "+ctx.IDENT(i).getText());
+                    globals.add(ctx.IDENT(i).getText());
+                }
+                myCodeGen.add(code);
+            }
+        }
+        return code;
     }
 
-    @Override public Object visitMethodDAST(MiParser.MethodDASTContext ctx) {
+/*    @Override public Object visitMethodDAST(MiParser.MethodDASTContext ctx) {
 
     }
 
     @Override public Object visitFormPAST(MiParser.FormPASTContext ctx) {
 
-    }
+    }*/
 
     @Override public Object visitTypeAST(MiParser.TypeASTContext ctx) {
         ArrayList<Token> tokens = new ArrayList<>();
@@ -54,7 +88,7 @@ public class ByteCodeG extends MiParserBaseVisitor {
         tokens.add(pseudo);
         return tokens;
     }
-
+/*
     @Override public Object visitDesignatorStatAST(MiParser.DesignatorStatASTContext ctx) {
 
     }
@@ -149,5 +183,5 @@ public class ByteCodeG extends MiParserBaseVisitor {
         }
 
     @Override public Object visitPorcMulopAST(MiParser.PorcMulopASTContext ctx) {
-        }
+        }*/
 }

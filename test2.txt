@@ -1,0 +1,9 @@
+class AllProds
+
+ int i, b;
+ char v;
+{
+
+}
+
+
