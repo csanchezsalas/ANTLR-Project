@@ -3,7 +3,14 @@ class AllProds
  int i, b;
  char v;
 {
+    int metodito(int n)
+        int x, y;
+        {}
 
 }
+
+
+
+
 
 

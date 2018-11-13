@@ -5,12 +5,22 @@ import org.antlr.v4.runtime.Token;
 import java.util.ArrayList;
 
 public class ByteCodeG extends MiParserBaseVisitor {
-   ArrayList<ArrayList> myCodeGen = new ArrayList<>();
-   ArrayList<String> globals = new ArrayList<>();
-   boolean inMethod= false;
-   int index= -1;
+
+    ArrayList<ArrayList> myCodeGen = new ArrayList<>();
+    ArrayList<ArrayList> methodData = new ArrayList<>();
+    ArrayList<String> globals = new ArrayList<>();
+    boolean inMethod= false;
+    int index= -1;
 
     public ByteCodeG() {
+    }
+
+    public ArrayList<String> joinLists(ArrayList<String> a, ArrayList<String> b){
+
+        for (int i = 0; i<b.size(); i++){
+            a.add(b.get(i));
+        }
+        return a;
     }
 
     @Override public Object visitProgramAST(MiParser.ProgramASTContext ctx) {
@@ -72,13 +82,83 @@ public class ByteCodeG extends MiParserBaseVisitor {
         return code;
     }
 
-/*    @Override public Object visitMethodDAST(MiParser.MethodDASTContext ctx) {
+    @Override public Object visitMethodDAST(MiParser.MethodDASTContext ctx) {
+        ArrayList<String>methodMetadata= new ArrayList<>();
+        ArrayList<String>code= new ArrayList<>();
+        ArrayList<String>params= new ArrayList<>(); //formPars
+        ArrayList<String>vars= new ArrayList<>(); //vardecl
+        ArrayList<String>blocks= new ArrayList<>(); //vardecl
+        inMethod = true;
+        index++;
+        code.add(index + " DEF "+ ctx.IDENT().getText());
+        globals.add(ctx.IDENT().getText()); // método es considerado como parte de las globales
+
+        if(ctx.formPars()!=null){
+            /********************************************************/
+            /**DATOS DE MÉTODOS: NOMBRE, REFERENCIA, CANT/PARÁMETROS*/
+            methodMetadata.add(ctx.IDENT().getText());
+            methodMetadata.add(String.valueOf(index));
+            params = (ArrayList<String>)visit(ctx.formPars());
+            methodMetadata.add(String.valueOf(params.size()));
+            methodData.add(methodMetadata);
+            /*****************************************************/
+
+            code = joinLists(code, params); // pegando listas
+
+        }
+        else{
+            /********************************************************/
+            /**DATOS DE MÉTODOS: NOMBRE, REFERENCIA, CANT/PARÁMETROS*/
+            methodMetadata.add(ctx.IDENT().getText());
+            methodMetadata.add(String.valueOf(index));
+            methodMetadata.add("0");
+            methodData.add(methodMetadata);
+            /*****************************************************/
+
+        }
+
+        for(int i = 0; i<ctx.varDecl().size(); i++){
+            vars = (ArrayList<String>)visit(ctx.varDecl(i));
+            code = joinLists(code, vars);
+        }
+        /*blocks = (ArrayList<String>)visit(ctx.block()); // block
+        code = joinLists(code, blocks);*/
+
+
+        return code;
 
     }
 
     @Override public Object visitFormPAST(MiParser.FormPASTContext ctx) {
+        ArrayList<String>code= new ArrayList<>();
+        ArrayList<Token> typeTokens = (ArrayList<Token>) visit(ctx.type(0));
+        Token tipo = typeTokens.get(0);
 
-    }*/
+
+        if(tipo.getText().equals("int")){
+            index++;
+            code.add(index + " PUSH_LOCAL_I "+ ctx.IDENT(0));
+        }
+        else{
+            index++;
+            code.add(index + " PUSH_LOCAL_C "+ ctx.IDENT(0));
+        }
+        for(int i = 1; i<ctx.IDENT().size(); i++){
+            typeTokens = (ArrayList<Token>) visit(ctx.type(i));
+            tipo = typeTokens.get(i);
+
+            if(tipo.getText().equals("int")){
+                index++;
+                code.add(index + " PUSH_LOCAL_I "+ ctx.IDENT(i).getText());
+            }
+            else{
+                index++;
+                code.add(index + " PUSH_LOCAL_C "+ ctx.IDENT(i).getText());
+            }
+
+        }
+        return code;
+    }
 
     @Override public Object visitTypeAST(MiParser.TypeASTContext ctx) {
         ArrayList<Token> tokens = new ArrayList<>();
