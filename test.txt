@@ -22,12 +22,15 @@ int num_aux;
  //       num_aux = 1;
 //else i= 3;
 
- write (p);
+ // write (p);
 
 }
 
 
 }
+
+
+
 
 
 

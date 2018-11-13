@@ -11,6 +11,8 @@ public class ByteCodeG extends MiParserBaseVisitor {
     ArrayList<String> globals = new ArrayList<>();
     boolean inMethod= false;
     int index= -1;
+    int a;
+    
 
     public ByteCodeG() {
     }
@@ -116,6 +118,7 @@ public class ByteCodeG extends MiParserBaseVisitor {
             /*****************************************************/
 
         }
+
 
         for(int i = 0; i<ctx.varDecl().size(); i++){
             vars = (ArrayList<String>)visit(ctx.varDecl(i));
